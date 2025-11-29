@@ -1,2 +1,0 @@
-# AHORCADO
-manaña
