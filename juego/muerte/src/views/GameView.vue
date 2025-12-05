@@ -1,197 +1,355 @@
 <template>
-  <q-page class="game-wrapper column items-center q-pa-md">
+  <div class="game-container">
 
-    <!-- PANEL DE INFORMACIÓN -->
-    <div class="info-panel column items-center q-pa-md q-mb-lg">
-      <div class="title">🎮 AHORCADO</div>
-
-      <div class="info-row">
-        <span class="label">Categoría:</span>
-        <span class="value neon">{{ categoryName }}</span>
-      </div>
-
-      <div class="info-row">
-        <span class="label">Nivel:</span>
-        <span class="value neon">{{ levelName }}</span>
-      </div>
-
-      <div class="info-row">
-        <span class="label">Intentos:</span>
-        <span class="value attempts">{{ attempts }}</span>
-      </div>
-    </div>
+    <!-- ENCABEZADO -->
+    <header class="header">
+      <div class="tag">🐾 Categoría: <strong>{{ categoria }}</strong></div>
+      <div class="tag">🔥 Nivel: <strong>{{ nivel }}</strong></div>
+      <div class="tag">❤️ Intentos: <strong>{{ intentos }} / {{ maxIntentos }}</strong></div>
+    </header>
 
     <!-- AHORCADO -->
-    <div class="hangman-area column items-center q-mb-lg">
-      <svg width="260" height="260" class="neon-svg">
-        <line x1="20" y1="240" x2="180" y2="240" stroke="#40c9ff" stroke-width="6"/>
-        <line x1="100" y1="240" x2="100" y2="30" stroke="#40c9ff" stroke-width="6"/>
-        <line x1="100" y1="30" x2="200" y2="30" stroke="#40c9ff" stroke-width="6"/>
-        <line x1="200" y1="30" x2="200" y2="70" stroke="#40c9ff" stroke-width="4"/>
+    <div class="hangman-wrapper">
+      <canvas ref="canvas" width="300" height="300"></canvas>
+    </div>
 
-        <circle v-if="fails >= 1" cx="200" cy="95" r="25" stroke="#ff4c4c" stroke-width="4" fill="none"/>
-        <line v-if="fails >= 2" x1="200" y1="120" x2="200" y2="180" stroke="#ff4c4c" stroke-width="4"/>
-        <line v-if="fails >= 3" x1="200" y1="135" x2="170" y2="160" stroke="#ff4c4c" stroke-width="4"/>
-        <line v-if="fails >= 4" x1="200" y1="135" x2="230" y2="160" stroke="#ff4c4c" stroke-width="4"/>
-        <line v-if="fails >= 5" x1="200" y1="180" x2="170" y2="220" stroke="#ff4c4c" stroke-width="4"/>
-        <line v-if="fails >= 6" x1="200" y1="180" x2="230" y2="220" stroke="#ff4c4c" stroke-width="4"/>
-      </svg>
+    <!-- PALABRA -->
+    <div class="word">
+      <span
+        v-for="(l, i) in palabraArray"
+        :key="i"
+        class="letra"
+        :class="{ pop: l !== '_' }"
+      >
+        {{ l }}
+      </span>
+    </div>
 
-      <!-- PALABRA -->
-      <div class="word row justify-center q-mt-md">
-        <span v-for="(l,i) in wordArray" :key="i" class="letter">
-          {{ guessed.includes(l) ? l.toUpperCase() : "_" }}
-        </span>
-      </div>
-
-      <!-- PISTA -->
-      <div class="hint-text q-mt-md">💡 {{ currentHint }}</div>
+    <!-- PISTA -->
+    <div class="hint-box">
+      <span>💡 Pista:</span>
+      <strong>{{ pista }}</strong>
     </div>
 
     <!-- TECLADO -->
-    <div class="keyboard column items-center q-mb-lg">
-      <div v-for="(row, index) in keyboardRows" :key="index" class="keyboard-row row justify-center q-mb-sm">
-        <q-btn
-          v-for="l in row"
-          :key="l"
-          :label="l"
-          color="cyan-5"
-          text-color="white"
-          flat
-          glossy
-          :disable="usedLetters.includes(l) || gameOver"
-          class="key q-mx-xs q-my-xs"
-          @click="press(l)"
-        />
+    <div class="keyboard">
+      <button
+        v-for="letra in letras"
+        :key="letra"
+        class="key"
+        :disabled="letrasUsadas.includes(letra)"
+        @click="usarLetra(letra)"
+      >
+        {{ letra }}
+      </button>
+    </div>
+
+    <!-- MODAL -->
+    <div v-if="finalizado" class="modal">
+      <div class="modal-content">
+        <h2>{{ mensajeFinal }}</h2>
+        <p v-if="perdiste">La palabra era: <strong>{{ palabra }}</strong></p>
+        <button class="btn-restart" @click="reiniciarJuego">🔄 Jugar Otra Vez</button>
       </div>
     </div>
 
-    <!-- MODAL GANASTE -->
-    <q-dialog v-model="win">
-      <q-card class="modal success">
-        <q-card-section class="text-center">
-          <div class="text-h5">🎉 ¡GANASTE!</div>
-          <div>La palabra era: <strong>{{ word.toUpperCase() }}</strong></div>
-        </q-card-section>
-        <q-card-actions align="center">
-          <q-btn label="🔄 Jugar otra vez" color="cyan" flat @click="restart"/>
-          <q-btn label="🏠 Salir" color="red" flat @click="$router.push('/')"/>
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
-    <!-- MODAL PERDISTE -->
-    <q-dialog v-model="lose">
-      <q-card class="modal fail">
-        <q-card-section class="text-center">
-          <div class="text-h5">💀 ¡PERDISTE!</div>
-          <div>La palabra era: <strong>{{ word.toUpperCase() }}</strong></div>
-        </q-card-section>
-        <q-card-actions align="center">
-          <q-btn label="🔄 Reintentar" color="cyan" flat @click="restart"/>
-          <q-btn label="🏠 Salir" color="red" flat @click="$router.push('/')"/>
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
-  </q-page>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue"
+import { ref, onMounted } from "vue";
 
-// --- Configuración inicial ---
-const category = "animales"
-const level = "facil"
+/* ========= DATOS ========== */
+const categoria = "Animales";
+const nivel = "Difícil";
 
-const categoryNames = { animales:"Animales", frutas:"Frutas", paises:"Países", deportes:"Deportes", peliculas:"Películas", ciencia:"Ciencia" }
-const levelNames = { facil:"Fácil", medio:"Medio", dificil:"Difícil" }
+const palabras = [
+  { palabra: "HIPOPOTAMO", pista: "Muy pesado, vive en ríos" },
+  { palabra: "CAMALEON", pista: "Cambia de color" },
+  { palabra: "AGUILA", pista: "Ave de presa" },
+  { palabra: "ESCORPION", pista: "Tiene un aguijón" },
+];
 
-const categoryName = categoryNames[category]
-const levelName = levelNames[level]
+/* ========= ESTADO ========= */
+const seleccion = palabras[Math.floor(Math.random() * palabras.length)];
+const palabra = seleccion.palabra;
+const pista = seleccion.pista;
 
-const attemptsConfig = { facil:10, medio:7, dificil:5 }
-const attempts = ref(attemptsConfig[level])
+const intentos = ref(0);
+const maxIntentos = 7;
+const letrasUsadas = ref([]);
+const finalizado = ref(false);
+const perdiste = ref(false);
+const mensajeFinal = ref("");
 
-const words = {
-  animales:["perro","gato","oso","caballo","tiburon","elefante","leopardo"]
+const palabraArray = ref(Array(palabra.length).fill("_"));
+const letras = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("");
+
+/* ========= CANVAS ========= */
+const canvas = ref(null);
+let ctx;
+
+/* ========= DIBUJO ========= */
+function dibujarHorca() {
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = "#000";
+  ctx.lineCap = "round";
+
+  // PALO VERTICAL
+  ctx.beginPath();
+  ctx.moveTo(80, 260);
+  ctx.lineTo(80, 40);
+  ctx.stroke();
+
+  // BASE
+  ctx.beginPath();
+  ctx.moveTo(20, 260);
+  ctx.lineTo(140, 260);
+  ctx.stroke();
+
+  // PALO HORIZONTAL
+  ctx.beginPath();
+  ctx.moveTo(80, 40);
+  ctx.lineTo(210, 40);
+  ctx.stroke();
+
+  // SOPORTE DIAGONAL
+  ctx.beginPath();
+  ctx.moveTo(80, 120);
+  ctx.lineTo(210, 40);
+  ctx.stroke();
+
+  // CUERDA FIJA
+  ctx.beginPath();
+  ctx.moveTo(210, 40);
+  ctx.lineTo(210, 85);
+  ctx.stroke();
+
+  // NUDO REDONDO
+  ctx.beginPath();
+  ctx.arc(210, 105, 18, 0, Math.PI * 2);
+  ctx.stroke();
 }
 
-function filterByLevel(list){
-  if(level==="facil") return list.filter(w=>w.length<=6)
-  if(level==="medio") return list.filter(w=>w.length>=6 && w.length<=8)
-  return list.filter(w=>w.length>=8)
+function dibujarParte(parte) {
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = "#000";
+  ctx.lineCap = "round";
+
+  switch (parte) {
+    case 1: // CABEZA
+      ctx.beginPath();
+      ctx.arc(210, 145, 28, 0, Math.PI * 2);
+      ctx.stroke();
+      break;
+
+    case 2: // CUERPO
+      ctx.beginPath();
+      ctx.moveTo(210, 173);
+      ctx.lineTo(210, 235);
+      ctx.stroke();
+      break;
+
+    case 3: // BRAZO IZQ
+      ctx.beginPath();
+      ctx.moveTo(210, 190);
+      ctx.lineTo(175, 215);
+      ctx.stroke();
+      break;
+
+    case 4: // BRAZO DER
+      ctx.beginPath();
+      ctx.moveTo(210, 190);
+      ctx.lineTo(245, 215);
+      ctx.stroke();
+      break;
+
+    case 5: // PIERNA IZQ
+      ctx.beginPath();
+      ctx.moveTo(210, 235);
+      ctx.lineTo(190, 270);
+      ctx.stroke();
+      break;
+
+    case 6: // PIERNA DER
+      ctx.beginPath();
+      ctx.moveTo(210, 235);
+      ctx.lineTo(230, 270);
+      ctx.stroke();
+      break;
+
+    case 7: // OJOS X
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+      ctx.moveTo(198, 135);
+      ctx.lineTo(208, 155);
+      ctx.moveTo(208, 135);
+      ctx.lineTo(198, 155);
+
+      ctx.moveTo(215, 135);
+      ctx.lineTo(225, 155);
+      ctx.moveTo(225, 135);
+      ctx.lineTo(215, 155);
+
+      ctx.stroke();
+      break;
+  }
 }
 
-let selectedWords = filterByLevel(words[category])
-if(selectedWords.length===0) selectedWords=words[category]
+/* ========= LÓGICA ========= */
+const sndCorrecto = new Audio("https://assets.mixkit.co/active_storage/sfx/1505/1505-preview.mp3");
+const sndError = new Audio("https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3");
+const sndWin = new Audio("https://assets.mixkit.co/active_storage/sfx/2769/2769-preview.mp3");
+const sndLose = new Audio("https://assets.mixkit.co/active_storage/sfx/442/442-preview.mp3");
 
-const word = selectedWords[Math.floor(Math.random()*selectedWords.length)]
-const wordArray = word.split("")
+function usarLetra(letra) {
+  letrasUsadas.value.push(letra);
 
-const hintsDB = {
-  perro:["Animal doméstico","Ladra","Amigo fiel"],
-  gato:["Tiene bigotes","Hace miau","Trepa"],
-  elefante:["El animal más grande de tierra","Tiene trompa","Muy inteligente"],
-  oso:["Animal grande","Come miel","Hiberna"],
-  caballo:["Corre rápido","Se monta","Animal grande"],
-  leopardo:["Tiene manchas","Corre veloz","Felino"],
-  tiburon:["Vive en el mar","Depredador","Muy rápido"]
+  let acierto = false;
+
+  palabra.split("").forEach((l, i) => {
+    if (l === letra) {
+      palabraArray.value[i] = letra;
+      acierto = true;
+    }
+  });
+
+  if (acierto) {
+    sndCorrecto.play();
+    if (!palabraArray.value.includes("_")) {
+      sndWin.play();
+      finalizarJuego(false);
+    }
+  } else {
+    sndError.play();
+    intentos.value++;
+    dibujarParte(intentos.value);
+    if (intentos.value === maxIntentos) {
+      sndLose.play();
+      finalizarJuego(true);
+    }
+  }
 }
 
-const currentHint = ref(hintsDB[word][0])
-
-// --- Juego ---
-const letters = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("")
-const keyboardRows = [
-  letters.slice(0,10),
-  letters.slice(10,20),
-  letters.slice(20)
-]
-
-const usedLetters = ref([])
-const guessed = ref([])
-const fails = ref(0)
-const win = ref(false)
-const lose = ref(false)
-const gameOver = computed(()=>win.value || lose.value)
-
-function press(l){
-  if(gameOver.value) return
-  usedLetters.value.push(l)
-  const lower = l.toLowerCase()
-  if(word.includes(lower)) guessed.value.push(lower)
-  else { fails.value++; attempts.value-- }
+function finalizarJuego(perdio) {
+  perdiste.value = perdio;
+  finalizado.value = true;
+  mensajeFinal.value = perdio ? "❌ Perdiste" : "🎉 ¡Ganaste!";
 }
 
-watch([guessed, attempts], ()=>{
-  if(attempts.value<=0) lose.value=true
-  const remaining = wordArray.filter(l=>!guessed.value.includes(l))
-  if(remaining.length===0) win.value=true
-})
+function reiniciarJuego() {
+  window.location.reload();
+}
 
-function restart(){ location.reload() }
+onMounted(() => {
+  ctx = canvas.value.getContext("2d");
+  dibujarHorca(); // HORCA FIJA
+});
 </script>
 
 <style scoped>
-.game-wrapper{
-  background: radial-gradient(circle at center, #0f0c29,#302b63,#24243e);
-  min-height:100vh; color:#fff; font-family:'Press Start 2P',cursive; padding-top:1rem;
+/* --- TODO TU CSS SIN CAMBIOS --- */
+.game-container {
+  width: 92%;
+  max-width: 850px;
+  margin: 20px auto;
+  padding: 25px;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  position: relative;
 }
-.info-panel{
-  background: rgba(255,255,255,0.05); border:2px solid #40c9ff; border-radius:15px; box-shadow:0 0 15px #40c9ff,0 0 30px #ff4c4c; text-align:center;
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
-.title{ font-size:1.8em; text-shadow:0 0 10px #40c9ff,0 0 20px #ff4c4c; margin-bottom:10px; }
-.info-row{ display:flex; justify-content:space-between; width:200px; margin:5px 0; }
-.label{ font-weight:bold; }
-.value{ font-size:1.3em; text-shadow:0 0 5px #ff4c4c;}
-.attempts{ color:#4cff4c; text-shadow:0 0 5px #4cff4c;}
-.hangman-area{ background: rgba(255,255,255,0.03); padding:15px; border-radius:15px; box-shadow:0 0 20px #ff4c4c,0 0 30px #40c9ff; display:flex; flex-direction:column; align-items:center;}
-.word .letter{ font-size:2em; margin:0 5px; color:#fff; text-shadow:0 0 5px #40c9ff,0 0 10px #ff4c4c;}
-.hint-text{ color:#ffdd57; text-shadow:0 0 5px #ffdd57; font-style:italic; text-align:center;}
-.keyboard-row{ flex-wrap: wrap;}
-.key{ min-width:40px; min-height:40px; font-weight:bold; text-shadow:0 0 5px #0ff,0 0 10px #0ff; box-shadow:0 0 5px #0ff,0 0 10px #0ff; transition:0.2s;}
-.key:disabled{ background:#222 !important; color:#555 !important; text-shadow:none; box-shadow:none;}
-.modal.success{ border:2px solid #4cff4c; box-shadow:0 0 25px #4cff4c,0 0 50px #40c9ff;}
-.modal.fail{ border:2px solid #ff4c4c; box-shadow:0 0 25px #ff4c4c,0 0 50px #ffdd57;}
+
+.tag {
+  background: #f4f4f4;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 15px;
+}
+
+.hangman-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.word {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  font-size: 34px;
+  margin-bottom: 15px;
+}
+
+.letra {
+  transition: 0.2s;
+}
+
+.letra.pop {
+  transform: scale(1.3);
+}
+
+.hint-box {
+  padding: 12px;
+  background: #fff0b3;
+  border-left: 5px solid #ffcc00;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  font-size: 18px;
+}
+
+.keyboard {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+
+.key {
+  padding: 14px 0;
+  background: #5c7aff;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.key:disabled {
+  background: #b5b5b5;
+}
+
+.modal {
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  width: 80%;
+  max-width: 320px;
+  text-align: center;
+}
+
+.btn-restart {
+  margin-top: 15px;
+  padding: 12px 25px;
+  background: #4e8cff;
+  color: white;
+  border-radius: 12px;
+}
 </style>
+
+
