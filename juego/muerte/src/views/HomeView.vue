@@ -18,19 +18,50 @@
         </svg>
       </div>
 
-      <button class="neon-btn" @click="goPlay">
+      <!-- TU MISMO BOTÓN, NO SE DUPLICA -->
+      <button class="neon-btn" @click="mostrarFormulario = true">
         🚀 ¡JUGAR AHORA!
       </button>
+
+      <!-- FORMULARIO DE NOMBRE (solo aparece cuando das click) -->
+      <div v-if="mostrarFormulario" class="login-container">
+        <h2 class="login-title">Ingresa tu nombre para jugar</h2>
+
+        <input
+          class="login-input"
+          type="text"
+          v-model="nombre"
+          placeholder="Tu nombre"
+        >
+
+        <button class="login-btn" @click="entrarAlJuego">
+          ✅ Comenzar
+        </button>
+
+        <p class="error" v-if="error">{{ error }}</p>
+      </div>
 
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+
 const router = useRouter()
 
-function goPlay() {
+const mostrarFormulario = ref(false)
+const nombre = ref('')
+const error = ref('')
+
+function entrarAlJuego() {
+  if (nombre.value.trim() === '') {
+    error.value = 'Por favor escribe tu nombre'
+    return
+  }
+
+  localStorage.setItem('ahorcado_jugador', nombre.value)
   router.push('/categories')
 }
 </script>
@@ -98,8 +129,50 @@ function goPlay() {
   box-shadow: 0 0 25px #40c9ff, inset 0 0 20px #6efbff;
 }
 
+/* FORMULARIO */
+.login-container {
+  margin-top: 25px;
+  padding: 20px;
+  border: 1px solid #40c9ff;
+  border-radius: 15px;
+  box-shadow: 0 0 15px #40c9ff;
+  animation: fadeIn .5s ease;
+}
+
+.login-title {
+  color: #d8b4ff;
+  margin-bottom: 15px;
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 20px;
+  border: none;
+  text-align: center;
+  outline: none;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 20px;
+  background: #40c9ff;
+  border: none;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.error {
+  margin-top: 10px;
+  color: #ff4d6d;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(.95); }
   to { opacity: 1; transform: scale(1); }
 }
 </style>
+
