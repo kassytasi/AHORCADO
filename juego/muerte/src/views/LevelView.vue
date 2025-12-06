@@ -5,7 +5,6 @@
       <p class="neon-subtitle">Selecciona el nivel</p>
       <h1 class="neon-title">Categoría: {{ categoryName }}</h1>
 
-      
       <div class="grid">
         <button class="level-btn facil" @click="selectLevel('facil')" title="4–6 letras • 10 intentos">
           😊 Fácil<br>
@@ -153,11 +152,12 @@ function selectLevel(level) {
   }
 }
 
-/* Responsive */
 @media (max-width: 500px) {
   .level-card { padding: 25px; }
   .level-btn { font-size: 1.1rem; }
 }
 </style>
+
+
 
 
