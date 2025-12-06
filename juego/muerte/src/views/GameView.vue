@@ -3,7 +3,7 @@
 
     <!-- HEADER -->
     <header class="header">
-      <div class="tag">🐾 Categoría: <strong>{{ categoria }}</strong></div>
+      <div class="tag">🐾 Categoría: <strong>{{ categoriaNombre }}</strong></div>
       <div class="tag">🔥 Nivel: <strong>{{ nivel }}</strong></div>
       <div class="tag">❤️ Intentos: <strong>{{ intentos }} / {{ maxIntentos }}</strong></div>
       <div class="tag">⏱️ Tiempo: <strong>{{ tiempoFormateado }}</strong></div>
@@ -62,28 +62,64 @@ import { useRoute, useRouter } from "vue-router";
 const route = useRoute();
 const router = useRouter();
 
-const categoria = route.query.category || "Animales";
+const categoria = route.query.category || "frutas";
 const nivel = route.query.level || "facil";
 const jugador = ref(localStorage.getItem("ahorcado_jugador")?.trim() || "Jugador");
 
-/* PALABRAS Y PISTAS */
-const palabras = [
-  { palabra: "HIPOPOTAMO", pista: "Muy pesado, vive en ríos" },
-  { palabra: "CAMALEON", pista: "Cambia de color" },
-  { palabra: "AGUILA", pista: "Ave de presa" },
-  { palabra: "ESCORPION", pista: "Tiene un aguijón" }
-];
+// Palabras por categoría
+const palabrasPorCategoria = {
+  frutas: [
+    { palabra: "MANZANA", pista: "Roja o verde, se come cruda" },
+    { palabra: "PLATANO", pista: "Amarillo y alargado" },
+    { palabra: "FRESA", pista: "Pequeña y roja, con semillas afuera" },
+    { palabra: "NARANJA", pista: "Cítrico y dulce" },
+    { palabra: "MANGO", pista: "Dulce y tropical" }
+  ],
+  animales: [
+    { palabra: "HIPOPOTAMO", pista: "Muy pesado, vive en ríos" },
+    { palabra: "CAMALEON", pista: "Cambia de color" },
+    { palabra: "AGUILA", pista: "Ave de presa" },
+    { palabra: "LEON", pista: "Rey de la selva" },
+    { palabra: "TIBURON", pista: "Depredador marino" }
+  ],
+  peliculas: [
+    { palabra: "TITANIC", pista: "Barco que se hundió" },
+    { palabra: "INCEPTION", pista: "Sueños dentro de sueños" },
+    { palabra: "JURASSIC", pista: "Parque de dinosaurios" },
+    { palabra: "GLADIADOR", pista: "Peleas en el coliseo" },
+    { palabra: "AVENGERS", pista: "Superhéroes reunidos" }
+  ],
+  deportes: [
+    { palabra: "FUTBOL", pista: "Se juega con balón y portería" },
+    { palabra: "TENIS", pista: "Se juega con raqueta y pelota" },
+    { palabra: "BASQUET", pista: "Encestar la pelota en aro" },
+    { palabra: "BOXEO", pista: "Golpes con guantes" },
+    { palabra: "NATACION", pista: "Deporte acuático" }
+  ],
+  paises: [
+    { palabra: "BRASIL", pista: "País de fútbol y carnaval" },
+    { palabra: "JAPON", pista: "País del sol naciente" },
+    { palabra: "ESPAÑA", pista: "País con flamenco y paella" },
+    { palabra: "CANADA", pista: "País con hojas de arce" },
+    { palabra: "EGIPTO", pista: "Pirámides y faraones" }
+  ],
+  ciencia: [
+    { palabra: "ATOMO", pista: "Unidad básica de la materia" },
+    { palabra: "GRAVEDAD", pista: "Fuerza que atrae todo hacia la Tierra" },
+    { palabra: "ELECTRON", pista: "Partícula cargada negativamente" },
+    { palabra: "TEORIA", pista: "Explicación científica de un fenómeno" },
+    { palabra: "CELULA", pista: "Unidad básica de los seres vivos" }
+  ]
+};
 
+// Estados
 let seleccion, palabra, pista;
-
-/* ESTADOS */
 const intentos = ref(0);
-const totalPartes = 7; // Total de partes del muñeco
-const maxIntentos = computed(()=>{
-  let m = nivel==="facil" ? 10 : nivel==="medio" ? 7 : 5;
-  return Math.max(m, totalPartes); // asegura que siempre haya suficientes intentos
+const maxIntentos = computed(() => {
+  if(nivel==="facil") return 10;
+  if(nivel==="medio") return 7;
+  return 5;
 });
-
 const letrasUsadas = ref([]);
 const finalizado = ref(false);
 const perdiste = ref(false);
@@ -92,13 +128,25 @@ const palabraArray = ref([]);
 const letras = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("");
 const tiempo = ref(0);
 let intervaloTiempo = null;
-
 const canvas = ref(null);
 let ctx;
 
-/* INICIAR JUEGO */
+const categoriaNombre = computed(() => {
+  const nombres = {
+    frutas: "Frutas",
+    animales: "Animales",
+    peliculas: "Películas",
+    deportes: "Deportes",
+    paises: "Países",
+    ciencia: "Ciencia"
+  };
+  return nombres[categoria] || "Categoría";
+});
+
+// Funciones de juego
 function initGameState(){
-  seleccion = palabras[Math.floor(Math.random()*palabras.length)];
+  const arr = palabrasPorCategoria[categoria] || [{palabra:"ERROR", pista:"No hay palabras"}];
+  seleccion = arr[Math.floor(Math.random()*arr.length)];
   palabra = seleccion.palabra;
   pista = seleccion.pista;
 
@@ -118,55 +166,19 @@ function initGameState(){
   },0);
 }
 
-/* FUNCIONES DEL MUÑECO */
-function limpiarCanvas(){ ctx.clearRect(0,0,canvas.value.width,canvas.value.height); }
-
-function dibujarHorca(){
-  ctx.lineWidth=5; ctx.strokeStyle="#fff"; ctx.lineCap="round";
-  ctx.beginPath(); ctx.moveTo(80,260); ctx.lineTo(80,40); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(20,260); ctx.lineTo(140,260); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(80,40); ctx.lineTo(210,40); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(80,120); ctx.lineTo(210,40); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(210,40); ctx.lineTo(210,85); ctx.stroke();
-  ctx.beginPath(); ctx.arc(210,105,18,0,Math.PI*2); ctx.stroke();
-}
-
-function dibujarParte(parte){
-  ctx.lineWidth=5;
-  switch(parte){
-    case 1: ctx.beginPath(); ctx.arc(210,145,28,0,Math.PI*2); ctx.stroke(); break;
-    case 2: ctx.beginPath(); ctx.moveTo(210,173); ctx.lineTo(210,235); ctx.stroke(); break;
-    case 3: ctx.beginPath(); ctx.moveTo(210,190); ctx.lineTo(175,215); ctx.stroke(); break;
-    case 4: ctx.beginPath(); ctx.moveTo(210,190); ctx.lineTo(245,215); ctx.stroke(); break;
-    case 5: ctx.beginPath(); ctx.moveTo(210,235); ctx.lineTo(190,270); ctx.stroke(); break;
-    case 6: ctx.beginPath(); ctx.moveTo(210,235); ctx.lineTo(230,270); ctx.stroke(); break;
-    case 7:
-      ctx.lineWidth=3;
-      ctx.beginPath();
-      ctx.moveTo(198,135); ctx.lineTo(208,155);
-      ctx.moveTo(208,135); ctx.lineTo(198,155);
-      ctx.moveTo(215,135); ctx.lineTo(225,155);
-      ctx.moveTo(225,135); ctx.lineTo(215,155);
-      ctx.stroke();
-      break;
-  }
-}
-
-/* FUNCIONES JUEGO */
 function usarLetra(letra){
-  if(finalizado.value) return;
-  if(letrasUsadas.value.includes(letra)) return;
+  if(finalizado.value || letrasUsadas.value.includes(letra)) return;
 
   letrasUsadas.value.push(letra);
   let acierto=false;
-  palabra.split("").forEach((l,i)=>{ if(l===letra){ palabraArray.value[i]=letra; acierto=true; } });
+  palabra.split("").forEach((l,i)=>{ if(l===letra) { palabraArray.value[i]=letra; acierto=true; } });
 
   if(!acierto){
     intentos.value++;
     dibujarParte(intentos.value);
-    if(intentos.value >= totalPartes){ finalizarJuego(true); }
-  } else {
-    if(!palabraArray.value.includes("_")) finalizarJuego(false);
+    if(intentos.value >= maxIntentos.value) finalizarJuego(true);
+  } else if(!palabraArray.value.includes("_")) {
+    finalizarJuego(false);
   }
 }
 
@@ -180,9 +192,45 @@ function finalizarJuego(perdio){
 
 function reiniciarJuego(){ initGameState(); }
 function volverNivel(){ router.push({ path:'/levels', query:{ category: categoria } }); }
-function volverCategoria(){ router.push({ path:'/categories' }); }
+function volverCategoria(){ router.push('/categories'); }
 
-/* GUARDAR TIEMPO MEJORADO */
+function iniciarTiempo(){ intervaloTiempo=setInterval(()=>{ tiempo.value++; },1000); }
+const tiempoFormateado = computed(()=>{ const m=String(Math.floor(tiempo.value/60)).padStart(2,"0"); const s=String(tiempo.value%60).padStart(2,"0"); return `${m}:${s}`; });
+function irRanking(){ router.push('/ranking'); }
+
+// Canvas
+function limpiarCanvas(){ ctx.clearRect(0,0,canvas.value.width,canvas.value.height); }
+function dibujarHorca(){
+  ctx.lineWidth=5; ctx.strokeStyle="#fff"; ctx.lineCap="round";
+  ctx.beginPath(); ctx.moveTo(80,260); ctx.lineTo(80,40); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(20,260); ctx.lineTo(140,260); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(80,40); ctx.lineTo(210,40); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(210,40); ctx.lineTo(210,85); ctx.stroke();
+  ctx.beginPath(); ctx.arc(210,105,18,0,Math.PI*2); ctx.stroke();
+}
+
+function dibujarParte(parte){
+  ctx.lineWidth=5;
+  switch(parte){
+    case 1: ctx.beginPath(); ctx.arc(210,145,28,0,Math.PI*2); ctx.stroke(); break;
+    case 2: ctx.beginPath(); ctx.moveTo(210,173); ctx.lineTo(210,235); ctx.stroke(); break;
+    case 3: ctx.beginPath(); ctx.moveTo(210,190); ctx.lineTo(175,215); ctx.stroke(); break;
+    case 4: ctx.beginPath(); ctx.moveTo(210,190); ctx.lineTo(245,215); ctx.stroke(); break;
+    case 5: ctx.beginPath(); ctx.moveTo(210,235); ctx.lineTo(190,270); ctx.stroke(); break;
+    case 6: ctx.beginPath(); ctx.moveTo(210,235).lineTo(230,270); ctx.stroke(); break;
+    case 7:
+      ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.moveTo(198,135); ctx.lineTo(208,155);
+      ctx.moveTo(208,135); ctx.lineTo(198,155);
+      ctx.moveTo(215,135); ctx.lineTo(225,155);
+      ctx.moveTo(225,135); ctx.lineTo(215,155);
+      ctx.stroke();
+      break;
+  }
+}
+
+// Guardar tiempo
 function guardarTiempo(){
   const jugadorLimpio = jugador.value.trim() || "Jugador";
   localStorage.setItem("ahorcado_jugador", jugadorLimpio);
@@ -192,7 +240,7 @@ function guardarTiempo(){
     categoria,
     nivel,
     tiempo: tiempo.value,
-    tiempoTexto: formatearTiempo(tiempo.value),
+    tiempoTexto: tiempoFormateado.value,
     fecha: new Date().toLocaleDateString()
   };
 
@@ -211,68 +259,37 @@ function guardarTiempo(){
   localStorage.setItem("recordsAhorcado", JSON.stringify(arr));
 }
 
-function iniciarTiempo(){ intervaloTiempo=setInterval(()=>{ tiempo.value++; },1000); }
-function formatearTiempo(sec){ const m=String(Math.floor(sec/60)).padStart(2,"0"); const s=String(sec%60).padStart(2,"0"); return `${m}:${s}`; }
-const tiempoFormateado = computed(()=>formatearTiempo(tiempo.value));
-
-function irRanking(){ router.push('/ranking'); }
-
 onMounted(()=>{ initGameState(); });
 </script>
 
 <style scoped>
-:global(body) { margin: 0; background-color: #0a001a; font-family: "Poppins", sans-serif; color: #ddd; }
-
-.game-container { width: 92%; max-width: 900px; margin: 20px auto; padding: 25px; background-color: #0a001a; border-radius: 18px; box-shadow: 0 0 30px 8px #7e4dff; color: #ddd; }
-
-.header { display: flex; flex-wrap: wrap; justify-content: space-between; margin-bottom: 20px; gap: 10px; }
-
-.tag { background: rgba(30, 20, 50, 0.7); padding: 8px 12px; border-radius: 12px; font-size: 14px; font-weight: 500; box-shadow: 0 0 10px #9d4dff; text-shadow: 0 0 8px #5e1aff; color: #fff; }
-
-.volver-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
-
-.btn-volver { background: transparent; border: 2px solid #4cddff; color: #4cddff; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-weight: 500; transition: 0.2s; box-shadow: 0 0 10px #4cddff; text-shadow: 0 0 5px #4cddff; }
-
-.btn-volver:hover { transform: scale(1.08); }
-
-.hangman-wrapper { display: flex; justify-content: center; margin-bottom: 15px; }
-
-.word { display: flex; justify-content: center; gap: 12px; font-size: 32px; margin-bottom: 15px; letter-spacing: 2px; color: #fff; text-shadow: 0 0 8px #ff6b6b; }
-
-.letra.pop { transform: scale(1.3); color: #ff6b6b; font-weight: bold; text-shadow: 0 0 12px #ff4c4c; }
-
-.hint-box { padding: 10px 12px; background: rgba(0, 255, 224, 0.1); border-radius: 10px; color: #00ffe0; box-shadow: 0 0 15px #00ffe0; font-weight: bold; }
-
-.keyboard { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 20px; }
-
-.key { padding: 12px 0; background: transparent; border: 2px solid #1dd1a1; color: #1dd1a1; border-radius: 8px; cursor: pointer; transition: 0.2s; text-shadow: 0 0 6px #1dd1a1; }
-
-.key:disabled { background: #333; color: #555; border-color: #555; }
-
-.key:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 10px #1dd1a1; }
-
-.ranking-btn-container { text-align: center; margin-bottom: 15px; }
-
-.btn-ranking { padding: 10px 18px; background: transparent; border: 2px solid #feca57; color: #feca57; border-radius: 10px; cursor: pointer; transition: 0.2s; text-shadow: 0 0 6px #feca57; }
-
-.btn-ranking:hover { transform: scale(1.05); box-shadow: 0 0 12px #feca57; }
-
-.modal { position: fixed; inset: 0; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; padding: 15px; z-index: 1000; }
-
-.modal-content { background: rgba(30, 20, 50, 0.95); padding: 25px; border-radius: 16px; text-align: center; color: #fff; width: 100%; max-width: 450px; box-shadow: 0 0 20px #9d4dff, inset 0 0 30px #5e1aff; }
-
-.ganaste { color: #1dd1a1; text-shadow: 0 0 15px #1dd1a1; }
-
-.perdiste { color: #ff4c4c; text-shadow: 0 0 15px #ff4c4c; }
-
-@media (max-width: 600px) {
-  .word { font-size: 24px; }
-  .keyboard { grid-template-columns: repeat(5, 1fr); }
-  .header { flex-direction: column; gap: 8px; }
-  .modal-content { padding: 20px; }
-  .volver-buttons { flex-direction: column; gap: 8px; }
-}
+/* Estilos similares al juego anterior */
+:global(body) { margin:0; background-color:#0a001a; font-family:"Poppins", sans-serif; color:#ddd; }
+.game-container { width: 92%; max-width: 900px; margin:20px auto; padding:25px; background-color:#0a001a; border-radius:18px; box-shadow:0 0 30px 8px #7e4dff; color:#ddd; }
+.header { display:flex; flex-wrap:wrap; justify-content:space-between; margin-bottom:20px; gap:10px; }
+.tag { background: rgba(30,20,50,0.7); padding:8px 12px; border-radius:12px; font-size:14px; font-weight:500; box-shadow:0 0 10px #9d4dff; text-shadow:0 0 8px #5e1aff; color:#fff; }
+.hangman-wrapper { display:flex; justify-content:center; margin-bottom:15px; }
+.word { display:flex; justify-content:center; gap:12px; font-size:32px; margin-bottom:15px; letter-spacing:2px; color:#fff; text-shadow:0 0 8px #ff6b6b; }
+.letra.pop { transform:scale(1.3); color:#ff6b6b; font-weight:bold; text-shadow:0 0 12px #ff4c4c; }
+.hint-box { padding:10px 12px; background:rgba(0,255,224,0.1); border-radius:10px; color:#00ffe0; box-shadow:0 0 15px #00ffe0; font-weight:bold; }
+.keyboard { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:20px; }
+.key { padding:12px 0; background:transparent; border:2px solid #1dd1a1; color:#1dd1a1; border-radius:8px; cursor:pointer; transition:0.2s; text-shadow:0 0 6px #1dd1a1; }
+.key:disabled { background:#333; color:#555; border-color:#555; }
+.key:hover:not(:disabled) { transform:scale(1.05); box-shadow:0 0 10px #1dd1a1; }
+.ranking-btn-container { text-align:center; margin-bottom:15px; }
+.btn-ranking { padding:10px 18px; background:transparent; border:2px solid #feca57; color:#feca57; border-radius:10px; cursor:pointer; transition:0.2s; text-shadow:0 0 6px #feca57; }
+.btn-ranking:hover { transform:scale(1.05); box-shadow:0 0 12px #feca57; }
+.modal { position:fixed; inset:0; backdrop-filter:blur(5px); display:flex; justify-content:center; align-items:center; padding:15px; z-index:1000; }
+.modal-content { background: rgba(30, 20, 50, 0.95); padding: 25px; border-radius: 16px; text-align:center; color:#fff; width:100%; max-width:450px; box-shadow:0 0 20px #9d4dff, inset 0 0 30px #5e1aff; }
+.ganaste { color:#1dd1a1; text-shadow:0 0 15px #1dd1a1; }
+.perdiste { color:#ff4c4c; text-shadow:0 0 15px #ff4c4c; }
+.volver-buttons { display:flex; gap:8px; flex-wrap:wrap; }
+.btn-volver { background:transparent; border:2px solid #4cddff; color:#4cddff; padding:6px 12px; border-radius:12px; cursor:pointer; font-weight:500; transition:0.2s; box-shadow:0 0 10px #4cddff; text-shadow:0 0 5px #4cddff; }
+.btn-volver:hover { transform:scale(1.08); }
+@media(max-width:600px) { .word{ font-size:24px; } .keyboard{ grid-template-columns:repeat(5,1fr); } .header{ flex-direction:column; gap:8px; } .modal-content{ padding:20px; } .volver-buttons{ flex-direction:column; gap:8px; } }
 </style>
+
+
 
 
 
