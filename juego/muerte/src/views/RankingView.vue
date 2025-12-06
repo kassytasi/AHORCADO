@@ -154,3 +154,5 @@ tbody tr:nth-child(even){ background:rgba(255,255,255,0.05); }
 .btn-container button{padding:10px 20px; background:#ff6b6b; color:#050010; border:none; border-radius:12px; cursor:pointer; font-weight:bold; text-shadow:0 0 6px #ff4c4c; transition:0.2s;}
 .btn-container button:hover{transform:scale(1.05); box-shadow:0 0 15px #ff6b6b;}
 </style>
+
+
