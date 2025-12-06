@@ -1,52 +1,42 @@
 <template>
-  <div class="neon-bg">
-    <div class="neon-card">
+  <div class="start-screen">
 
-      <!-- CONTENIDO INICIAL -->
+    <!-- Fondo animado -->
+    <div class="background"></div>
+
+    <div class="start-card">
+
+      <!-- Pantalla inicial -->
       <div v-if="!mostrarLogin">
-        <h1 class="neon-title">
-          <span class="icon">🎮</span>
-          AHORCADO
-        </h1>
+        <h1 class="title">🎲 AHORCADO</h1>
+        <p class="subtitle">Adivina la palabra antes de que se complete el muñeco</p>
 
-        <p class="neon-subtitle">
-          ¡Adivina la palabra antes de que sea tarde!
-        </p>
-
-        <div class="hangman-container">
-          <svg width="240" height="220" class="neon-svg">
-            <line x1="10" y1="200" x2="160" y2="200" stroke="#40c9ff" stroke-width="6" />
-            <line x1="85" y1="200" x2="85" y2="20" stroke="#40c9ff" stroke-width="6" />
-            <line x1="85" y1="20" x2="190" y2="20" stroke="#40c9ff" stroke-width="6" />
-            <line x1="190" y1="20" x2="190" y2="70" stroke="#40c9ff" stroke-width="4" />
+        <div class="hangman-preview">
+          <svg width="120" height="150">
+            <!-- Cabeza -->
+            <circle cx="60" cy="30" r="15" stroke="#ffd700" stroke-width="4" fill="#ffecb3"/>
+            <!-- Cuerpo -->
+            <line x1="60" y1="45" x2="60" y2="90" stroke="#ffd700" stroke-width="4"/>
+            <!-- Brazos -->
+            <line x1="60" y1="55" x2="35" y2="70" stroke="#ffd700" stroke-width="4"/>
+            <line x1="60" y1="55" x2="85" y2="70" stroke="#ffd700" stroke-width="4"/>
+            <!-- Piernas -->
+            <line x1="60" y1="90" x2="40" y2="120" stroke="#ffd700" stroke-width="4"/>
+            <line x1="60" y1="90" x2="80" y2="120" stroke="#ffd700" stroke-width="4"/>
           </svg>
         </div>
-        
 
-        <!-- BOTÓN JUGAR AHORA -->
-        <button class="neon-btn" @click="mostrarLogin = true">
-          🚀 ¡JUGAR AHORA!
+        <button class="btn-play" @click="mostrarLogin = true">
+          🚀 JUGAR AHORA
         </button>
       </div>
 
-      <!-- FORMULARIO INICIAR SESIÓN -->
-      <div v-if="mostrarLogin" class="login-container">
-        
-        <!-- MENSAJE DE ADVERTENCIA -->
-        <p class="warning-msg">Debes ingresar tu nombre para jugar</p>
-
-        <input 
-          type="text"
-          v-model="nombre"
-          placeholder="Ingresa tu nombre"
-          class="login-input"
-        />
-
+      <!-- Formulario solo de nombre -->
+      <div v-else class="login-box">
+        <p class="login-info">Escribe tu nombre para continuar</p>
+        <input type="text" v-model="nombre" placeholder="Tu nombre..." class="login-input"/>
         <p v-if="error" class="error-msg">{{ error }}</p>
-
-        <button class="login-btn" @click="entrarAlJuego">
-          Entrar
-        </button>
+        <button class="btn-enter" @click="entrarAlJuego">Entrar</button>
       </div>
 
     </div>
@@ -54,8 +44,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref } from "vue"
+import { useRouter } from "vue-router"
 
 const router = useRouter()
 const mostrarLogin = ref(false)
@@ -63,117 +53,122 @@ const nombre = ref('')
 const error = ref('')
 
 function entrarAlJuego() {
-  if (!nombre.value.trim()) {
-    error.value = 'Debes ingresar tu nombre para jugar'
+  if(!nombre.value.trim()){
+    error.value = "Debes ingresar tu nombre"
     return
   }
-  error.value = ''
-  // Guardamos el nombre limpio en localStorage
-  localStorage.setItem('ahorcado_jugador', nombre.value.trim())
-  router.push('/categories')
+  error.value = ""
+  localStorage.setItem("ahorcado_jugador", nombre.value.trim())
+  router.push("/categories")
 }
 </script>
 
 <style scoped>
-/* Estilos existentes */
-.neon-bg {
+/* Fondo animado */
+.start-screen {
+  position: relative;
   min-height: 100vh;
-  background: radial-gradient(circle at 20% 20%, #120027, #050010 70%);
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  background: linear-gradient(135deg, #120027, #4c0070);
+  overflow: hidden;
 }
 
-.neon-card {
-  background: rgba(20, 10, 40, 0.7);
-  padding: 40px;
-  width: 90%;
-  max-width: 500px;
-  border-radius: 25px;
-  border: 2px solid #9d4dff;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 20px #9d4dff, inset 0 0 40px #5e1aff;
-  text-align: center;
-  animation: fadeIn 0.8s ease;
+.background {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.05), transparent 70%);
+  animation: pulse 5s infinite alternate;
+  z-index: 0;
 }
 
-.neon-title {
-  font-size: 3rem;
-  font-weight: 900;
-  color: #d8b4ff;
-  text-shadow: 0 0 10px #a845ff, 0 0 25px #6d00cc;
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.1); opacity: 1; }
 }
 
-.icon { margin-right: 10px; }
-
-.neon-subtitle {
-  color: #b98aff;
-  font-size: 1.2rem;
-  text-shadow: 0 0 8px #994aff;
-  margin-bottom: 30px;
-}
-
-.neon-svg line { filter: drop-shadow(0 0 8px #40c9ff); }
-
-.neon-btn {
-  background: transparent;
-  border: 2px solid #40c9ff;
-  color: #40c9ff;
-  padding: 15px 45px;
+/* Card central */
+.start-card {
+  position: relative;
+  z-index: 1;
+  background: rgba(30,10,60,0.85);
+  padding: 45px;
   border-radius: 30px;
+  text-align: center;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 0 30px #ff6fff, inset 0 0 15px #c600ff;
+  color: #fff;
+}
+
+/* Tipografía */
+.title {
+  font-size: 2.8rem;
+  font-weight: bold;
+  color: #ff6fff;
+  text-shadow: 0 0 15px #ff6fff, 0 0 25px #c600ff;
+  margin-bottom: 15px;
+}
+
+.subtitle {
   font-size: 1.2rem;
+  margin-bottom: 25px;
+  color: #ff9eff;
+}
+
+/* Preview del muñeco */
+.hangman-preview { margin-bottom: 25px; }
+
+/* Botones */
+.btn-play, .btn-enter {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  margin-bottom: 12px;
+  border-radius: 25px;
+  border: none;
+  font-weight: bold;
   cursor: pointer;
-  transition: 0.25s ease;
-  box-shadow: 0 0 12px #40c9ff;
-  text-shadow: 0 0 10px #40c9ff;
+  transition: 0.3s;
 }
 
-.neon-btn:hover {
-  transform: scale(1.07);
-  box-shadow: 0 0 25px #40c9ff, inset 0 0 20px #6efbff;
+.btn-play {
+  background: linear-gradient(45deg, #ff8c42, #ffd93d);
+  color: black;
 }
 
-.login-container {
-  margin-top: 25px;
-  padding: 20px;
-  border: 1px solid #40c9ff;
-  border-radius: 20px;
-  box-shadow: 0 0 12px #40c9ff;
-  background: rgba(0,0,0,0.4);
+.btn-play:hover, .btn-enter:hover { transform: scale(1.05); }
+
+.btn-enter {
+  background: linear-gradient(45deg, #1dd1a1, #00b894);
+  color: black;
 }
 
+/* Input */
+.login-box { text-align: center; }
 .login-input {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 12px;
-  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 15px;
   border: none;
-  outline: none;
   text-align: center;
+  background: #f0e6ff;
 }
 
-.login-btn {
-  background: #40c9ff;
-  color: black;
-  border: none;
-  padding: 10px 25px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-weight: bold;
-}
+/* Mensajes */
+.error-msg { color: #ff4b4b; margin-bottom: 10px; }
+.login-info { margin-bottom: 10px; color: #00ffe0; font-weight: bold; }
 
-.error-msg {
-  color: #ff4b4b;
-  margin-bottom: 10px;
-}
-
-/* NUEVO: mensaje de advertencia */
-.warning-msg {
-  color: #ffcc00;
-  margin-bottom: 10px;
-  font-weight: bold;
+/* Responsive */
+@media(max-width: 500px){
+  .title { font-size: 2rem; }
+  .subtitle { font-size: 1rem; }
+  .start-card { padding: 25px; }
 }
 </style>
+
+
 
 
