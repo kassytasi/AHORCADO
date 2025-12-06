@@ -45,7 +45,7 @@
           <p v-if="perdiste">La palabra era: <strong>{{ palabra }}</strong></p>
           <div class="volver-buttons">
             <button class="btn-restart" @click="reiniciarJuego">🔄 Volver a Jugar</button>
-            <button class="btn-volver" @click="volverNivel">⬅️ Volver a Nivel</button>
+            <button class="btn-volver" @click="volverNivel">⬅️ Volver a Niveles</button>
             <button class="btn-volver" @click="volverCategoria">🏠 Volver a Categoría</button>
           </div>
         </div>
@@ -78,10 +78,10 @@ let seleccion, palabra, pista;
 
 /* ESTADOS */
 const intentos = ref(0);
+const totalPartes = 7; // Total de partes del muñeco
 const maxIntentos = computed(()=>{
-  if(nivel==="facil") return 10;
-  if(nivel==="medio") return 7;
-  return 5;
+  let m = nivel==="facil" ? 10 : nivel==="medio" ? 7 : 5;
+  return Math.max(m, totalPartes); // asegura que siempre haya suficientes intentos
 });
 
 const letrasUsadas = ref([]);
@@ -164,7 +164,7 @@ function usarLetra(letra){
   if(!acierto){
     intentos.value++;
     dibujarParte(intentos.value);
-    if(intentos.value >= maxIntentos.value){ finalizarJuego(true); }
+    if(intentos.value >= totalPartes){ finalizarJuego(true); }
   } else {
     if(!palabraArray.value.includes("_")) finalizarJuego(false);
   }
@@ -221,203 +221,59 @@ onMounted(()=>{ initGameState(); });
 </script>
 
 <style scoped>
-/* Forzar fondo oscuro en todo el body para que no se vea blanco */
-:global(body) {
-  margin: 0;
-  background-color: #0a001a; /* fondo negro/azulado */
-  font-family: "Poppins", sans-serif;
-  color: #ddd;
-}
+:global(body) { margin: 0; background-color: #0a001a; font-family: "Poppins", sans-serif; color: #ddd; }
 
-/* Contenedor principal con fondo negro y resplandor púrpura */
-.game-container {
-  width: 92%;
-  max-width: 900px;
-  margin: 20px auto;
-  padding: 25px;
-  background-color: #0a001a; /* fondo oscuro */
-  border-radius: 18px;
-  box-shadow: 0 0 30px 8px #7e4dff; /* resplandor púrpura */
-  color: #ddd;
-}
+.game-container { width: 92%; max-width: 900px; margin: 20px auto; padding: 25px; background-color: #0a001a; border-radius: 18px; box-shadow: 0 0 30px 8px #7e4dff; color: #ddd; }
 
-.header {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  gap: 10px;
-}
+.header { display: flex; flex-wrap: wrap; justify-content: space-between; margin-bottom: 20px; gap: 10px; }
 
-.tag {
-  background: rgba(30, 20, 50, 0.7);
-  padding: 8px 12px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 500;
-  box-shadow: 0 0 10px #9d4dff;
-  text-shadow: 0 0 8px #5e1aff;
-  color: #fff;
-}
+.tag { background: rgba(30, 20, 50, 0.7); padding: 8px 12px; border-radius: 12px; font-size: 14px; font-weight: 500; box-shadow: 0 0 10px #9d4dff; text-shadow: 0 0 8px #5e1aff; color: #fff; }
 
-.volver-buttons {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+.volver-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
 
-.btn-volver {
-  background: transparent;
-  border: 2px solid #4cddff;
-  color: #4cddff;
-  padding: 6px 12px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: 0.2s;
-  box-shadow: 0 0 10px #4cddff;
-  text-shadow: 0 0 5px #4cddff;
-}
+.btn-volver { background: transparent; border: 2px solid #4cddff; color: #4cddff; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-weight: 500; transition: 0.2s; box-shadow: 0 0 10px #4cddff; text-shadow: 0 0 5px #4cddff; }
 
-.btn-volver:hover {
-  transform: scale(1.08);
-}
+.btn-volver:hover { transform: scale(1.08); }
 
-.hangman-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 15px;
-}
+.hangman-wrapper { display: flex; justify-content: center; margin-bottom: 15px; }
 
-.word {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  font-size: 32px;
-  margin-bottom: 15px;
-  letter-spacing: 2px;
-  color: #fff;
-  text-shadow: 0 0 8px #ff6b6b;
-}
+.word { display: flex; justify-content: center; gap: 12px; font-size: 32px; margin-bottom: 15px; letter-spacing: 2px; color: #fff; text-shadow: 0 0 8px #ff6b6b; }
 
-.letra.pop {
-  transform: scale(1.3);
-  color: #ff6b6b;
-  font-weight: bold;
-  text-shadow: 0 0 12px #ff4c4c;
-}
+.letra.pop { transform: scale(1.3); color: #ff6b6b; font-weight: bold; text-shadow: 0 0 12px #ff4c4c; }
 
-.hint-box {
-  padding: 10px 12px;
-  background: rgba(0, 255, 224, 0.1);
-  border-radius: 10px;
-  color: #00ffe0;
-  box-shadow: 0 0 15px #00ffe0;
-  font-weight: bold;
-}
+.hint-box { padding: 10px 12px; background: rgba(0, 255, 224, 0.1); border-radius: 10px; color: #00ffe0; box-shadow: 0 0 15px #00ffe0; font-weight: bold; }
 
-.keyboard {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  margin-bottom: 20px;
-}
+.keyboard { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 20px; }
 
-.key {
-  padding: 12px 0;
-  background: transparent;
-  border: 2px solid #1dd1a1;
-  color: #1dd1a1;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.2s;
-  text-shadow: 0 0 6px #1dd1a1;
-}
+.key { padding: 12px 0; background: transparent; border: 2px solid #1dd1a1; color: #1dd1a1; border-radius: 8px; cursor: pointer; transition: 0.2s; text-shadow: 0 0 6px #1dd1a1; }
 
-.key:disabled {
-  background: #333;
-  color: #555;
-  border-color: #555;
-}
+.key:disabled { background: #333; color: #555; border-color: #555; }
 
-.key:hover:not(:disabled) {
-  transform: scale(1.05);
-  box-shadow: 0 0 10px #1dd1a1;
-}
+.key:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 10px #1dd1a1; }
 
-.ranking-btn-container {
-  text-align: center;
-  margin-bottom: 15px;
-}
+.ranking-btn-container { text-align: center; margin-bottom: 15px; }
 
-.btn-ranking {
-  padding: 10px 18px;
-  background: transparent;
-  border: 2px solid #feca57;
-  color: #feca57;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: 0.2s;
-  text-shadow: 0 0 6px #feca57;
-}
+.btn-ranking { padding: 10px 18px; background: transparent; border: 2px solid #feca57; color: #feca57; border-radius: 10px; cursor: pointer; transition: 0.2s; text-shadow: 0 0 6px #feca57; }
 
-.btn-ranking:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 12px #feca57;
-}
+.btn-ranking:hover { transform: scale(1.05); box-shadow: 0 0 12px #feca57; }
 
-.modal {
-  position: fixed;
-  inset: 0;
-  backdrop-filter: blur(5px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 15px;
-  z-index: 1000;
-}
+.modal { position: fixed; inset: 0; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; padding: 15px; z-index: 1000; }
 
-.modal-content {
-  background: rgba(30, 20, 50, 0.95);
-  padding: 25px;
-  border-radius: 16px;
-  text-align: center;
-  color: #fff;
-  width: 100%;
-  max-width: 450px;
-  box-shadow: 0 0 20px #9d4dff, inset 0 0 30px #5e1aff;
-}
+.modal-content { background: rgba(30, 20, 50, 0.95); padding: 25px; border-radius: 16px; text-align: center; color: #fff; width: 100%; max-width: 450px; box-shadow: 0 0 20px #9d4dff, inset 0 0 30px #5e1aff; }
 
-.ganaste {
-  color: #1dd1a1;
-  text-shadow: 0 0 15px #1dd1a1;
-}
+.ganaste { color: #1dd1a1; text-shadow: 0 0 15px #1dd1a1; }
 
-.perdiste {
-  color: #ff4c4c;
-  text-shadow: 0 0 15px #ff4c4c;
-}
+.perdiste { color: #ff4c4c; text-shadow: 0 0 15px #ff4c4c; }
 
 @media (max-width: 600px) {
-  .word {
-    font-size: 24px;
-  }
-  .keyboard {
-    grid-template-columns: repeat(5, 1fr);
-  }
-  .header {
-    flex-direction: column;
-    gap: 8px;
-  }
-  .modal-content {
-    padding: 20px;
-  }
-  .volver-buttons {
-    flex-direction: column;
-    gap: 8px;
-  }
+  .word { font-size: 24px; }
+  .keyboard { grid-template-columns: repeat(5, 1fr); }
+  .header { flex-direction: column; gap: 8px; }
+  .modal-content { padding: 20px; }
+  .volver-buttons { flex-direction: column; gap: 8px; }
 }
 </style>
+
 
 
 
