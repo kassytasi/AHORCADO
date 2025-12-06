@@ -2,43 +2,51 @@
   <div class="neon-bg">
     <div class="neon-card">
 
-      <h1 class="neon-title">
-        <span class="icon">🎮</span>
-        AHORCADO
-      </h1>
+      <!-- CONTENIDO INICIAL -->
+      <div v-if="!mostrarLogin">
+        <h1 class="neon-title">
+          <span class="icon">🎮</span>
+          AHORCADO
+        </h1>
 
-      <p class="neon-subtitle">¡Adivina la palabra antes de que sea tarde!</p>
+        <p class="neon-subtitle">
+          ¡Adivina la palabra antes de que sea tarde!
+        </p>
 
-      <div class="hangman-container">
-        <svg width="240" height="220" class="neon-svg">
-          <line x1="10" y1="200" x2="160" y2="200" stroke="#40c9ff" stroke-width="6" />
-          <line x1="85" y1="200" x2="85" y2="20" stroke="#40c9ff" stroke-width="6" />
-          <line x1="85" y1="20" x2="190" y2="20" stroke="#40c9ff" stroke-width="6" />
-          <line x1="190" y1="20" x2="190" y2="70" stroke="#40c9ff" stroke-width="4" />
-        </svg>
+        <div class="hangman-container">
+          <svg width="240" height="220" class="neon-svg">
+            <line x1="10" y1="200" x2="160" y2="200" stroke="#40c9ff" stroke-width="6" />
+            <line x1="85" y1="200" x2="85" y2="20" stroke="#40c9ff" stroke-width="6" />
+            <line x1="85" y1="20" x2="190" y2="20" stroke="#40c9ff" stroke-width="6" />
+            <line x1="190" y1="20" x2="190" y2="70" stroke="#40c9ff" stroke-width="4" />
+          </svg>
+        </div>
+        
+
+        <!-- BOTÓN JUGAR AHORA -->
+        <button class="neon-btn" @click="mostrarLogin = true">
+          🚀 ¡JUGAR AHORA!
+        </button>
       </div>
 
-      <!-- TU MISMO BOTÓN, NO SE DUPLICA -->
-      <button class="neon-btn" @click="mostrarFormulario = true">
-        🚀 ¡JUGAR AHORA!
-      </button>
+      <!-- FORMULARIO INICIAR SESIÓN -->
+      <div v-if="mostrarLogin" class="login-container">
+        
+        <!-- MENSAJE DE ADVERTENCIA -->
+        <p class="warning-msg">Debes ingresar tu nombre para jugar</p>
 
-      <!-- FORMULARIO DE NOMBRE (solo aparece cuando das click) -->
-      <div v-if="mostrarFormulario" class="login-container">
-        <h2 class="login-title">Ingresa tu nombre para jugar</h2>
-
-        <input
-          class="login-input"
+        <input 
           type="text"
           v-model="nombre"
-          placeholder="Tu nombre"
-        >
+          placeholder="Ingresa tu nombre"
+          class="login-input"
+        />
+
+        <p v-if="error" class="error-msg">{{ error }}</p>
 
         <button class="login-btn" @click="entrarAlJuego">
-          ✅ Comenzar
+          Entrar
         </button>
-
-        <p class="error" v-if="error">{{ error }}</p>
       </div>
 
     </div>
@@ -50,23 +58,24 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-
-const mostrarFormulario = ref(false)
+const mostrarLogin = ref(false)
 const nombre = ref('')
 const error = ref('')
 
 function entrarAlJuego() {
-  if (nombre.value.trim() === '') {
-    error.value = 'Por favor escribe tu nombre'
+  if (!nombre.value.trim()) {
+    error.value = 'Debes ingresar tu nombre para jugar'
     return
   }
-
-  localStorage.setItem('ahorcado_jugador', nombre.value)
+  error.value = ''
+  // Guardamos el nombre limpio en localStorage
+  localStorage.setItem('ahorcado_jugador', nombre.value.trim())
   router.push('/categories')
 }
 </script>
 
 <style scoped>
+/* Estilos existentes */
 .neon-bg {
   min-height: 100vh;
   background: radial-gradient(circle at 20% 20%, #120027, #050010 70%);
@@ -96,9 +105,7 @@ function entrarAlJuego() {
   text-shadow: 0 0 10px #a845ff, 0 0 25px #6d00cc;
 }
 
-.icon {
-  margin-right: 10px;
-}
+.icon { margin-right: 10px; }
 
 .neon-subtitle {
   color: #b98aff;
@@ -107,9 +114,7 @@ function entrarAlJuego() {
   margin-bottom: 30px;
 }
 
-.neon-svg line {
-  filter: drop-shadow(0 0 8px #40c9ff);
-}
+.neon-svg line { filter: drop-shadow(0 0 8px #40c9ff); }
 
 .neon-btn {
   background: transparent;
@@ -129,50 +134,46 @@ function entrarAlJuego() {
   box-shadow: 0 0 25px #40c9ff, inset 0 0 20px #6efbff;
 }
 
-/* FORMULARIO */
 .login-container {
   margin-top: 25px;
   padding: 20px;
   border: 1px solid #40c9ff;
-  border-radius: 15px;
-  box-shadow: 0 0 15px #40c9ff;
-  animation: fadeIn .5s ease;
-}
-
-.login-title {
-  color: #d8b4ff;
-  margin-bottom: 15px;
+  border-radius: 20px;
+  box-shadow: 0 0 12px #40c9ff;
+  background: rgba(0,0,0,0.4);
 }
 
 .login-input {
   width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 20px;
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 10px;
   border: none;
-  text-align: center;
   outline: none;
+  text-align: center;
 }
 
 .login-btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: 20px;
   background: #40c9ff;
+  color: black;
   border: none;
-  color: #000;
-  font-weight: bold;
+  padding: 10px 25px;
+  border-radius: 20px;
   cursor: pointer;
+  font-weight: bold;
 }
 
-.error {
-  margin-top: 10px;
-  color: #ff4d6d;
+.error-msg {
+  color: #ff4b4b;
+  margin-bottom: 10px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(.95); }
-  to { opacity: 1; transform: scale(1); }
+/* NUEVO: mensaje de advertencia */
+.warning-msg {
+  color: #ffcc00;
+  margin-bottom: 10px;
+  font-weight: bold;
 }
 </style>
+
 
