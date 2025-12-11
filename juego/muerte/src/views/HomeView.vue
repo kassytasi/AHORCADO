@@ -1,247 +1,290 @@
 <template>
   <div class="home-neon-container">
-    <!-- Fondo con partículas neón -->
-    <div class="neon-particles">
-      <div v-for="i in 50" :key="i" class="particle" :style="particleStyle(i)"></div>
+    <!-- Fondo con efecto de red neuronal -->
+    <div class="neural-network">
+      <div class="node" v-for="i in 25" :key="i" :style="nodeStyle(i)"></div>
+      <div class="connection" v-for="i in 50" :key="'c' + i" :style="connectionStyle(i)"></div>
     </div>
 
-    <!-- Efectos de luces en las esquinas -->
-    <div class="corner-lights">
-      <div class="corner corner-tl neon-pink"></div>
-      <div class="corner corner-tr neon-blue"></div>
-      <div class="corner corner-bl neon-green"></div>
-      <div class="corner corner-br neon-orange"></div>
+    <!-- Efectos de iluminación -->
+    <div class="lighting-effects">
+      <div class="spotlight spotlight-pink"></div>
+      <div class="spotlight spotlight-blue"></div>
+      <div class="spotlight spotlight-purple"></div>
+      <div class="radar-beam"></div>
     </div>
 
-    <!-- Contenido principal -->
+    <!-- Contenido principal con diseño futurista -->
     <div class="home-content">
-      <!-- Logo y título NEÓN -->
-      <div class="neon-logo-container float">
-        <div class="neon-logo">
-          <div class="logo-glow"></div>
-          <div class="logo-text">
-            <span class="letter" style="--i:1">A</span>
-            <span class="letter" style="--i:2">H</span>
-            <span class="letter" style="--i:3">O</span>
-            <span class="letter" style="--i:4">R</span>
-            <span class="letter" style="--i:5">C</span>
-            <span class="letter" style="--i:6">A</span>
-            <span class="letter" style="--i:7">D</span>
-            <span class="letter" style="--i:8">O</span>
-          </div>
-          <div class="logo-subtitle neon-blue neon-flicker">
-            EL JUEGO DEFINITIVO
-          </div>
+      <!-- Cabecera holográfica -->
+      <div class="holographic-header">
+        <div class="hologram-effect"></div>
+        <div class="main-title">
+          <span class="title-letter" v-for="(letter, index) in 'AHORCADO'" :key="index" 
+                :style="letterStyle(index)">
+            {{ letter }}
+          </span>
         </div>
+        <div class="subtitle glitch-text" data-text="MATRIX EDITION">
+          MATRIX EDITION
+        </div>
+        <div class="title-glow"></div>
       </div>
 
-      <!-- Botón principal NEÓN -->
-      <div class="cta-section">
-        <transition name="neon-slide" mode="out-in">
-          <div v-if="!mostrarLogin" class="welcome-screen">
-            <h2 class="welcome-title neon-pink neon-pulse">
-              ¡PREPÁRATE PARA EL DESAFÍO!
-            </h2>
-            <p class="welcome-text">
-              Un clásico reinventado con tecnología neón.<br>
-              ¿Serás capaz de vencer al ahorcado?
-            </p>
-            
-            <button 
-              class="btn-neon btn-neon-pink btn-neon-large" 
-              @click="mostrarLogin = true"
-            >
-              <span class="btn-icon">⚡</span>
-              <span class="btn-text">INICIAR BATALLA</span>
-            </button>
+      <!-- Panel de control central -->
+      <div class="control-panel">
+        <!-- Sección de bienvenida o login -->
+        <transition name="panel-transition" mode="out-in">
+          <div v-if="!mostrarLogin" class="panel-section">
+            <div class="panel-header">
+              <h3 class="panel-title">
+                <span class="icon">🎮</span>
+                INICIAR SISTEMA
+              </h3>
+              <div class="status-indicator">
+                <div class="status-dot online"></div>
+                <span class="status-text">EN LÍNEA</span>
+              </div>
+            </div>
 
-            <!-- Estadísticas con efectos neón -->
-            <div class="neon-stats">
-              <div class="stat">
-                <div class="stat-icon neon-blue">👥</div>
-                <div class="stat-content">
-                  <div class="stat-value neon-green">{{ totalJugadores.toLocaleString() }}+</div>
-                  <div class="stat-label">JUGADORES</div>
+            <div class="panel-body">
+              <div class="welcome-message">
+                <p class="greeting">👋 BIENVENIDO, OPERADOR</p>
+                <h2 class="mission-title">MISIÓN ACTIVA: <span class="highlight">CÓDIGO NEO-87</span></h2>
+                <p class="mission-desc">
+                  Infiltra la matriz del ahorcado y descifra los códigos antes que el sistema te elimine.
+                </p>
+              </div>
+
+              <!-- Panel de métricas -->
+              <div class="metrics-grid">
+                <div class="metric-card" v-for="metric in metrics" :key="metric.label"
+                     :style="{ '--metric-color': metric.color }">
+                  <div class="metric-icon">{{ metric.icon }}</div>
+                  <div class="metric-content">
+                    <div class="metric-value">{{ metric.value }}</div>
+                    <div class="metric-label">{{ metric.label }}</div>
+                  </div>
+                  <div class="metric-glow"></div>
                 </div>
               </div>
-              <div class="stat">
-                <div class="stat-icon neon-pink">🎮</div>
-                <div class="stat-content">
-                  <div class="stat-value neon-orange">{{ totalPartidas.toLocaleString() }}+</div>
-                  <div class="stat-label">PARTIDAS</div>
+
+              <!-- Botón de acción principal -->
+              <button class="main-action-btn" @click="mostrarLogin = true">
+                <div class="btn-inner">
+                  <span class="btn-icon">🚀</span>
+                  <span class="btn-text">INICIAR PROTOCOLO</span>
+                  <span class="btn-subtext">INGRESAR CREDENCIALES</span>
                 </div>
-              </div>
-              <div class="stat">
-                <div class="stat-icon neon-green">📚</div>
-                <div class="stat-content">
-                  <div class="stat-value neon-purple">{{ palabrasTotales }}+</div>
-                  <div class="stat-label">PALABRAS</div>
+                <div class="btn-glow"></div>
+                <div class="btn-particles">
+                  <span v-for="i in 5" :key="i" class="particle"></span>
                 </div>
-              </div>
+              </button>
             </div>
           </div>
 
-          <div v-else class="login-screen">
-            <h2 class="login-title neon-blue neon-pulse">
-              CREA TU ALTER EGO
-            </h2>
-            <p class="login-text">
-              Elige un nombre que brille en la oscuridad
-            </p>
-            
-            <div class="neon-input-group">
-              <div class="input-label neon-green">
-                <span class="label-icon">✨</span>
-                NOMBRE DEL GLADIADOR
-              </div>
-              <input
-                v-model="nombre"
-                type="text"
-                placeholder="EJ: NEÓN, CYBER, RAYO..."
-                class="input-neon"
-                @keyup.enter="entrarAlJuego"
-                autofocus
-              />
-              <div v-if="error" class="error-message neon-red neon-glow">
-                ⚡ {{ error }}
+          <div v-else class="panel-section login-panel">
+            <div class="panel-header">
+              <h3 class="panel-title">
+                <span class="icon">🔐</span>
+                ACCESO AL SISTEMA
+              </h3>
+              <div class="security-level">
+                <div class="level-bar">
+                  <div class="level-fill" :style="{ width: securityLevel + '%' }"></div>
+                </div>
+                <span class="level-text">SEGURIDAD: {{ securityLevel }}%</span>
               </div>
             </div>
-            
-            <div class="neon-actions">
-              <button 
-                class="btn-neon btn-neon-green btn-neon-large" 
-                @click="entrarAlJuego"
-              >
-                <span class="btn-icon">🚀</span>
-                <span class="btn-text">DESPEGAR</span>
-              </button>
-              <button 
-                class="btn-neon btn-neon-blue" 
-                @click="mostrarLogin = false"
-              >
-                <span class="btn-icon">↩️</span>
-                <span class="btn-text">VOLVER</span>
-              </button>
+
+            <div class="panel-body">
+              <!-- Terminal de acceso -->
+              <div class="terminal">
+                <div class="terminal-header">
+                  <div class="terminal-dots">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                  </div>
+                  <span class="terminal-title">TERMINAL DE ACCESO</span>
+                </div>
+                <div class="terminal-body">
+                  <div class="command-line">
+                    <span class="prompt">user@matrix:~$</span>
+                    <span class="command">login_agent --name=</span>
+                    <input
+                      v-model="nombre"
+                      type="text"
+                      class="terminal-input"
+                      placeholder="IDENTIFICADOR_AGENTE"
+                      @keyup.enter="entrarAlJuego"
+                      @input="updateSecurityLevel"
+                      autofocus
+                    />
+                  </div>
+                  <div class="terminal-output" v-if="error">
+                    <span class="error-symbol">❌</span>
+                    <span class="error-text">{{ error }}</span>
+                  </div>
+                  <div class="terminal-status">
+                    <span class="status-symbol">⏳</span>
+                    <span class="status-text">ESPERANDO AUTENTICACIÓN...</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Botones de control -->
+              <div class="control-buttons">
+                <button class="control-btn confirm-btn" @click="entrarAlJuego">
+                  <span class="btn-icon">✅</span>
+                  <span class="btn-text">CONFIRMAR ACCESO</span>
+                </button>
+                <button class="control-btn cancel-btn" @click="mostrarLogin = false">
+                  <span class="btn-icon">↩️</span>
+                  <span class="btn-text">CANCELAR</span>
+                </button>
+              </div>
             </div>
           </div>
         </transition>
       </div>
 
-      <!-- Navegación rápida NEÓN -->
-      <div class="neon-quick-nav">
-        <button class="btn-neon btn-neon-purple" @click="irRanking">
-          <span class="btn-icon">🏆</span>
-          <span class="btn-text">RANKING NEÓN</span>
-        </button>
-        <button class="btn-neon btn-neon-orange" @click="irInstrucciones">
-          <span class="btn-icon">📖</span>
-          <span class="btn-text">MANUAL DE LUZ</span>
-        </button>
-        <button class="btn-neon btn-neon-yellow" @click="irCategorias">
-          <span class="btn-icon">🎯</span>
-          <span class="btn-text">CATEGORÍAS</span>
-        </button>
+      <!-- Panel de navegación rápida -->
+      <div class="nav-panel">
+        <div class="nav-card" v-for="nav in navigation" :key="nav.label" 
+             :style="{ '--nav-color': nav.color }" @click="nav.action">
+          <div class="nav-icon">{{ nav.icon }}</div>
+          <div class="nav-content">
+            <div class="nav-label">{{ nav.label }}</div>
+            <div class="nav-desc">{{ nav.description }}</div>
+          </div>
+          <div class="nav-indicator">
+            <div class="arrow">➤</div>
+          </div>
+          <div class="nav-glow"></div>
+        </div>
+      </div>
+
+      <!-- Sistema de alertas -->
+      <div class="alert-system">
+        <div class="alert alert-system" v-if="showSystemAlert">
+          <div class="alert-icon">⚠️</div>
+          <div class="alert-content">
+            <div class="alert-title">ALERTA DEL SISTEMA</div>
+            <div class="alert-message">SISTEMA DE JUEGO CARGADO AL 100%</div>
+          </div>
+          <button class="alert-close" @click="showSystemAlert = false">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Efectos de partículas -->
+    <div class="floating-elements">
+      <div class="floating-element" v-for="i in 8" :key="i" :style="floatingStyle(i)">
+        {{ ['⚡', '💎', '🌟', '🔮', '💫', '✨', '🎯', '🔱'][i-1] }}
       </div>
     </div>
 
     <!-- Efecto de escaneo -->
-    <div class="scan-line"></div>
-
-    <!-- Modal de instrucciones NEÓN -->
-    <transition name="neon-modal">
-      <div v-if="mostrarInstrucciones" class="neon-modal-overlay" @click.self="mostrarInstrucciones = false">
-        <div class="neon-modal-content card-neon card-neon-blue">
-          <div class="modal-header">
-            <h2 class="modal-title neon-blue neon-flicker">📖 MANUAL DE LUZ</h2>
-            <button class="modal-close btn-neon btn-neon-red btn-neon-small" @click="mostrarInstrucciones = false">
-              ✕
-            </button>
-          </div>
-          <div class="modal-body">
-            <div class="instruction">
-              <div class="step-number neon-pink">1</div>
-              <div class="step-content">
-                <h3 class="neon-green">SELECCIONA TU ZONA</h3>
-                <p class="neon-text">Elige una categoría que coincida con tu vibración</p>
-              </div>
-            </div>
-            <div class="instruction">
-              <div class="step-number neon-blue">2</div>
-              <div class="step-content">
-                <h3 class="neon-orange">AJUSTA TU NIVEL</h3>
-                <p class="neon-text">Configura la intensidad del desafío</p>
-              </div>
-            </div>
-            <div class="instruction">
-              <div class="step-number neon-green">3</div>
-              <div class="step-content">
-                <h3 class="neon-purple">ACTIVA LAS LETRAS</h3>
-                <p class="neon-text">Ilumina el teclado con tus elecciones</p>
-              </div>
-            </div>
-            <div class="instruction">
-              <div class="step-number neon-orange">4</div>
-              <div class="step-content">
-                <h3 class="neon-yellow">¡EVITA EL APAGÓN!</h3>
-                <p class="neon-text">Mantén la energía hasta descubrir la palabra</p>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn-neon btn-neon-pink" @click="mostrarInstrucciones = false">
-              ⚡ ENERGIZADO ⚡
-            </button>
-          </div>
-        </div>
-      </div>
-    </transition>
+    <div class="scanner-beam"></div>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref, onMounted } from "vue"
 import { useRouter } from "vue-router"
 
 const router = useRouter()
 const mostrarLogin = ref(false)
 const nombre = ref('')
 const error = ref('')
-const mostrarInstrucciones = ref(false)
+const securityLevel = ref(0)
+const showSystemAlert = ref(true)
 
-const totalJugadores = ref(5000)
-const totalPartidas = ref(15000)
-const palabrasTotales = ref(300)
+// Métricas del sistema
+const metrics = ref([
+  { icon: '👥', value: '5.2K+', label: 'AGENTES ACTIVOS', color: '#00ffea' },
+  { icon: '🎯', value: '98.7%', label: 'EFECTIVIDAD', color: '#ff00ff' },
+  { icon: '⚡', value: '2.1s', label: 'TIEMPO RESPUESTA', color: '#ffff00' },
+  { icon: '📊', value: '15K+', label: 'MISIONES', color: '#00ff00' }
+])
 
-const particleStyle = (index) => {
-  const colors = [
-    '#FF00FF', '#00FFFF', '#00FF00', '#FF5500',
-    '#9D00FF', '#FFFF00', '#FF0055'
-  ]
-  const color = colors[index % colors.length]
-  const size = Math.random() * 4 + 1
-  const duration = Math.random() * 10 + 10
-  const delay = Math.random() * 5
-  
+// Navegación
+const navigation = ref([
+  { 
+    icon: '🏆', 
+    label: 'CLASIFICACIÓN', 
+    description: 'TOP 10 AGENTES',
+    color: '#ff9900',
+    action: () => router.push('/ranking')
+  },
+  { 
+    icon: '📚', 
+    label: 'BASE DE DATOS', 
+    description: 'CATEGORÍAS',
+    color: '#00ccff',
+    action: () => router.push('/categories')
+  },
+  { 
+    icon: '⚙️', 
+    label: 'CONFIGURACIÓN', 
+    description: 'AJUSTES DEL SISTEMA',
+    color: '#9966ff',
+    action: () => console.log('Configuración')
+  }
+])
+
+// Estilos dinámicos
+const nodeStyle = (index) => {
+  const colors = ['#ff00ff', '#00ffff', '#00ff00', '#ff9900']
   return {
-    width: `${size}px`,
-    height: `${size}px`,
     left: `${Math.random() * 100}%`,
     top: `${Math.random() * 100}%`,
-    animationDuration: `${duration}s`,
-    animationDelay: `${delay}s`,
-    background: color,
-    boxShadow: `0 0 ${size * 3}px ${color}`
+    animationDelay: `${index * 0.1}s`,
+    backgroundColor: colors[index % colors.length],
+    boxShadow: `0 0 20px ${colors[index % colors.length]}`
   }
 }
 
+const connectionStyle = (index) => {
+  return {
+    animationDelay: `${index * 0.05}s`,
+    animationDuration: `${3 + Math.random() * 2}s`
+  }
+}
+
+const letterStyle = (index) => {
+  const colors = ['#ff00ff', '#00ffff', '#00ff00', '#ff9900', '#9966ff', '#ff3366', '#00ffea']
+  return {
+    animationDelay: `${index * 0.15}s`,
+    color: colors[index % colors.length],
+    textShadow: `0 0 20px ${colors[index % colors.length]}`
+  }
+}
+
+const floatingStyle = (index) => {
+  const delay = index * 0.5
+  return {
+    animationDelay: `${delay}s`,
+    left: `${10 + (index * 10)}%`
+  }
+}
+
+// Funciones
+function updateSecurityLevel() {
+  const length = nombre.value.length
+  securityLevel.value = Math.min(100, length * 20)
+}
+
 function entrarAlJuego() {
-  if(!nombre.value.trim()){
-    error.value = "¡LA ENERGÍA NECESITA UN NOMBRE!"
+  if (!nombre.value.trim()) {
+    error.value = "ERROR: IDENTIFICADOR REQUERIDO"
     return
   }
   
-  if(nombre.value.length < 2){
-    error.value = "¡MÁS POTENCIA! (MÍN. 2 CARACTERES)"
+  if (nombre.value.length < 2) {
+    error.value = "ERROR: IDENTIFICADOR MÍNIMO 2 CARACTERES"
     return
   }
   
@@ -250,256 +293,698 @@ function entrarAlJuego() {
   router.push("/categories")
 }
 
-function irRanking() {
-  router.push("/ranking")
-}
-
-function irInstrucciones() {
-  mostrarInstrucciones.value = true
-}
-
-function irCategorias() {
-  router.push("/categories")
-}
+onMounted(() => {
+  // Ocultar alerta después de 5 segundos
+  setTimeout(() => {
+    showSystemAlert.value = false
+  }, 5000)
+})
 </script>
 
 <style scoped>
 .home-neon-container {
   min-height: 100vh;
   background: 
-    radial-gradient(circle at 20% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 40% 60%, rgba(0, 255, 0, 0.1) 0%, transparent 50%),
-    linear-gradient(45deg, #000000 0%, #050510 30%, #0A0A1A 70%, #000000 100%);
+    radial-gradient(ellipse at 20% 20%, rgba(255, 0, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(0, 255, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 60%, rgba(0, 255, 0, 0.1) 0%, transparent 50%),
+    linear-gradient(135deg, #0a0a14 0%, #151522 50%, #0a0a14 100%);
   position: relative;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+  font-family: 'Courier New', monospace;
 }
 
-/* Partículas neón */
-.neon-particles {
+/* Red neuronal animada */
+.neural-network {
   position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
-  z-index: 0;
 }
 
-.particle {
+.node {
   position: absolute;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  animation: float-particle linear infinite;
-  filter: blur(1px);
+  animation: pulse 2s infinite;
+  z-index: 1;
 }
 
-@keyframes float-particle {
-  0% {
-    transform: translateY(100vh) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-100px) rotate(360deg);
-    opacity: 0;
-  }
-}
-
-/* Luces de esquina */
-.corner-lights {
+.connection {
   position: absolute;
-  inset: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 255, 0.5), transparent);
+  animation: connect 3s linear infinite;
+  transform-origin: left;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.5); opacity: 1; }
+}
+
+@keyframes connect {
+  0% { transform: scaleX(0); opacity: 0; }
+  50% { transform: scaleX(1); opacity: 0.5; }
+  100% { transform: scaleX(0); opacity: 0; }
+}
+
+/* Efectos de iluminación */
+.lighting-effects {
+  position: absolute;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
 
-.corner {
+.spotlight {
   position: absolute;
-  width: 200px;
-  height: 200px;
-  filter: blur(60px);
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  filter: blur(100px);
   opacity: 0.3;
-  z-index: 0;
 }
 
-.corner-tl { top: 0; left: 0; }
-.corner-tr { top: 0; right: 0; }
-.corner-bl { bottom: 0; left: 0; }
-.corner-br { bottom: 0; right: 0; }
+.spotlight-pink { 
+  top: 10%; 
+  left: 10%; 
+  background: #ff00ff; 
+}
+.spotlight-blue { 
+  bottom: 10%; 
+  right: 10%; 
+  background: #00ffff; 
+}
+.spotlight-purple { 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%);
+  background: #9966ff; 
+}
 
-/* Línea de escaneo */
-.scan-line {
+.radar-beam {
   position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, 
-    transparent, 
-    var(--neon-green), 
-    var(--neon-blue), 
-    var(--neon-pink), 
-    transparent);
-  animation: scanning 3s linear infinite;
-  z-index: 1;
-  box-shadow: 0 0 20px var(--neon-green);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00ff00, transparent);
+  top: 30%;
+  animation: radar 4s linear infinite;
+  box-shadow: 0 0 20px #00ff00;
+}
+
+@keyframes radar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 /* Contenido principal */
 .home-content {
   position: relative;
   z-index: 10;
-  width: 100%;
   max-width: 1200px;
-  text-align: center;
+  margin: 0 auto;
   padding: 40px 20px;
 }
 
-/* Logo neón */
-.neon-logo-container {
-  margin-bottom: 60px;
-}
-
-.neon-logo {
+/* Cabecera holográfica */
+.holographic-header {
   position: relative;
-  display: inline-block;
+  text-align: center;
+  margin-bottom: 60px;
+  padding: 40px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  overflow: hidden;
 }
 
-.logo-glow {
+.hologram-effect {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 120%;
-  height: 120%;
-  background: radial-gradient(circle, 
-    var(--neon-pink) 0%, 
-    var(--neon-blue) 30%, 
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(0, 255, 255, 0.1) 50%, 
     transparent 70%);
-  filter: blur(40px);
-  opacity: 0.5;
-  z-index: -1;
+  animation: hologram 3s linear infinite;
 }
 
-.logo-text {
+@keyframes hologram {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.main-title {
   display: flex;
+  justify-content: center;
   gap: 15px;
-  font-size: 5rem;
+  font-size: 4.5rem;
   font-weight: 900;
   margin-bottom: 20px;
   flex-wrap: wrap;
-  justify-content: center;
 }
 
 @media (max-width: 768px) {
-  .logo-text {
-    font-size: 3rem;
+  .main-title {
+    font-size: 2.8rem;
     gap: 8px;
   }
 }
 
-.letter {
-  color: var(--neon-pink);
-  animation: neon-flicker 1.5s infinite;
-  animation-delay: calc(var(--i) * 0.1s);
-  text-shadow: 
-    0 0 10px currentColor,
-    0 0 20px currentColor,
-    0 0 30px currentColor,
-    0 0 40px currentColor;
-  transition: all 0.3s;
-}
-
-.letter:hover {
-  color: var(--neon-blue);
-  transform: translateY(-10px) scale(1.2);
-}
-
-.logo-subtitle {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: 3px;
+.title-letter {
+  animation: float 3s infinite;
   text-transform: uppercase;
 }
 
-/* CTA Section */
-.cta-section {
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(20px);
-  border: 2px solid var(--neon-purple);
-  border-radius: var(--border-radius-xl);
-  padding: 50px;
-  margin-bottom: 40px;
-  position: relative;
-  overflow: hidden;
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
 }
 
-.cta-section::before {
-  content: '';
+.subtitle {
+  font-size: 1.8rem;
+  color: #00ffea;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  position: relative;
+}
+
+.glitch-text {
+  animation: glitch 2s infinite;
+  position: relative;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--gradient-rainbow);
-  animation: scanning 3s linear infinite;
+  width: 100%;
+  height: 100%;
 }
 
-.welcome-title, .login-title {
-  font-size: 2.5rem;
+.glitch-text::before {
+  animation: glitch-1 0.5s infinite;
+  color: #ff00ff;
+  z-index: -1;
+}
+
+.glitch-text::after {
+  animation: glitch-2 0.5s infinite;
+  color: #00ffff;
+  z-index: -2;
+}
+
+@keyframes glitch {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-2px); }
+  40% { transform: translateX(2px); }
+  60% { transform: translateX(-1px); }
+  80% { transform: translateX(1px); }
+}
+
+@keyframes glitch-1 {
+  0%, 100% { clip-path: inset(0 0 0 0); }
+  33% { clip-path: inset(10px 0 30px 0); }
+  66% { clip-path: inset(20px 0 10px 0); }
+}
+
+@keyframes glitch-2 {
+  0%, 100% { clip-path: inset(0 0 0 0); }
+  33% { clip-path: inset(40px 0 1px 0); }
+  66% { clip-path: inset(10px 0 40px 0); }
+}
+
+/* Panel de control */
+.control-panel {
+  background: rgba(10, 15, 30, 0.8);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  border: 2px solid rgba(0, 255, 255, 0.2);
+  margin-bottom: 40px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 30px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 1.8rem;
+  color: #00ffea;
+  margin: 0;
+}
+
+.panel-title .icon {
+  font-size: 2rem;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.status-dot.online {
+  background: #00ff00;
+  box-shadow: 0 0 10px #00ff00;
+  animation: pulse 2s infinite;
+}
+
+.status-text {
+  color: #00ff00;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.panel-body {
+  padding: 40px;
+}
+
+/* Mensaje de bienvenida */
+.welcome-message {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.greeting {
+  font-size: 1.3rem;
+  color: #00ffff;
+  margin-bottom: 10px;
+}
+
+.mission-title {
+  font-size: 2.2rem;
+  color: white;
   margin-bottom: 20px;
+}
+
+.mission-title .highlight {
+  color: #ff00ff;
+  text-shadow: 0 0 10px #ff00ff;
+}
+
+.mission-desc {
+  font-size: 1.1rem;
+  color: #aaa;
+  line-height: 1.6;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Grid de métricas */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.metric-card {
+  position: relative;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 15px;
+  padding: 25px;
+  border: 2px solid;
+  border-color: var(--metric-color, #00ffea);
+  transition: all 0.3s;
+  overflow: hidden;
+}
+
+.metric-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px var(--metric-color, rgba(0, 255, 234, 0.3));
+}
+
+.metric-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.metric-content {
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: var(--metric-color, #00ffea);
+  margin-bottom: 5px;
+  text-shadow: 0 0 10px currentColor;
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  color: #aaa;
   text-transform: uppercase;
   letter-spacing: 2px;
 }
 
-@media (max-width: 768px) {
-  .welcome-title, .login-title {
-    font-size: 1.8rem;
+.metric-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, 
+    var(--metric-color, rgba(0, 255, 234, 0.2)) 0%,
+    transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.metric-card:hover .metric-glow {
+  opacity: 0.3;
+}
+
+/* Botón principal */
+.main-action-btn {
+  position: relative;
+  width: 100%;
+  padding: 30px;
+  background: linear-gradient(135deg, #0066ff, #00ccff);
+  border: none;
+  border-radius: 15px;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.main-action-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 50px rgba(0, 204, 255, 0.5);
+}
+
+.btn-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-icon {
+  font-size: 2.5rem;
+}
+
+.btn-text {
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+}
+
+.btn-subtext {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.btn-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, 
+    rgba(255, 255, 255, 0.3) 0%,
+    transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.main-action-btn:hover .btn-glow {
+  opacity: 1;
+}
+
+.btn-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.btn-particles .particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  animation: particle-float 2s infinite;
+}
+
+@keyframes particle-float {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) translateX(var(--tx, 0));
+    opacity: 0;
   }
 }
 
-.welcome-text, .login-text {
-  color: var(--text-muted);
-  font-size: 1.2rem;
-  margin-bottom: 40px;
-  line-height: 1.6;
+/* Panel de login */
+.login-panel {
+  border-color: rgba(255, 0, 255, 0.3);
 }
 
-/* Estadísticas neón */
-.neon-stats {
+.security-level {
   display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin-top: 50px;
+  align-items: center;
+  gap: 15px;
+}
+
+.level-bar {
+  width: 200px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.level-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff0000, #ff9900, #00ff00);
+  transition: width 0.3s;
+}
+
+.level-text {
+  color: #00ffea;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* Terminal */
+.terminal {
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 10px;
+  border: 2px solid #00ff00;
+  overflow: hidden;
+  margin-bottom: 30px;
+}
+
+.terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: 2px solid #00ff00;
+}
+
+.terminal-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.terminal-dots .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.terminal-dots .red { background: #ff5f57; }
+.terminal-dots .yellow { background: #ffbd2e; }
+.terminal-dots .green { background: #28ca42; }
+
+.terminal-title {
+  color: #00ff00;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.terminal-body {
+  padding: 25px;
+}
+
+.command-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 
-.stat {
+.prompt {
+  color: #00ff00;
+  font-weight: bold;
+}
+
+.command {
+  color: #00ccff;
+}
+
+.terminal-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  min-width: 200px;
+  outline: none;
+  border-bottom: 2px solid #00ff00;
+  padding: 5px 0;
+}
+
+.terminal-input::placeholder {
+  color: #666;
+}
+
+.terminal-output,
+.terminal-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  margin-top: 15px;
+  border-radius: 5px;
+}
+
+.terminal-output {
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid #ff0000;
+}
+
+.error-symbol {
+  color: #ff0000;
+}
+
+.error-text {
+  color: #ff6666;
+}
+
+.terminal-status {
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #00ff00;
+}
+
+.status-symbol {
+  color: #00ff00;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+.status-text {
+  color: #00ff00;
+}
+
+/* Botones de control */
+.control-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.control-btn {
+  padding: 20px 40px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.confirm-btn {
+  background: linear-gradient(135deg, #00cc00, #00ff00);
+  color: white;
+}
+
+.cancel-btn {
+  background: linear-gradient(135deg, #cc0000, #ff0000);
+  color: white;
+}
+
+.control-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Panel de navegación */
+.nav-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.nav-card {
+  position: relative;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 15px;
+  padding: 25px;
+  border: 2px solid;
+  border-color: var(--nav-color, #00ccff);
+  cursor: pointer;
+  transition: all 0.3s;
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: var(--border-radius-lg);
-  border: 1px solid;
-  min-width: 200px;
-  transition: all var(--transition-normal);
 }
 
-.stat:hover {
-  transform: translateY(-5px);
-  border-color: var(--neon-pink);
-  box-shadow: var(--shadow-neon-pink);
+.nav-card:hover {
+  transform: translateX(10px);
+  box-shadow: 0 10px 30px var(--nav-color, rgba(0, 204, 255, 0.3));
 }
 
-.stat-icon {
+.nav-icon {
   font-size: 2.5rem;
   width: 60px;
   height: 60px;
@@ -507,261 +992,213 @@ function irCategorias() {
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.5);
-  border-radius: var(--border-radius);
+  border-radius: 10px;
+  border: 2px solid var(--nav-color, #00ccff);
 }
 
-.stat-content {
-  text-align: left;
+.nav-content {
+  flex: 1;
 }
 
-.stat-value {
-  font-size: 2.2rem;
-  font-weight: 900;
+.nav-label {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: white;
   margin-bottom: 5px;
-  text-shadow: 0 0 10px currentColor;
 }
 
-.stat-label {
+.nav-desc {
   font-size: 0.9rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 2px;
+  color: #aaa;
 }
 
-/* Input neón */
-.neon-input-group {
-  max-width: 500px;
-  margin: 0 auto 30px;
+.nav-indicator .arrow {
+  font-size: 1.5rem;
+  color: var(--nav-color, #00ccff);
+  transition: transform 0.3s;
 }
 
-.input-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 15px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+.nav-card:hover .arrow {
+  transform: translateX(5px);
 }
 
-.error-message {
-  margin-top: 15px;
-  padding: 12px 20px;
-  border: 2px solid var(--neon-red);
-  border-radius: var(--border-radius);
-  font-weight: 700;
-  text-align: center;
-}
-
-/* Acciones neón */
-.neon-actions {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-/* Navegación rápida */
-.neon-quick-nav {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-/* Modal neón */
-.neon-modal-overlay {
-  position: fixed;
+.nav-glow {
+  position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.neon-modal-content {
-  max-width: 600px;
   width: 100%;
-  animation: neon-glow 2s infinite;
+  height: 100%;
+  background: radial-gradient(circle at center, 
+    var(--nav-color, rgba(0, 204, 255, 0.2)) 0%,
+    transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  border-radius: 15px;
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 30px;
-  border-bottom: 2px solid var(--neon-blue);
+.nav-card:hover .nav-glow {
+  opacity: 0.3;
 }
 
-.modal-title {
-  font-size: 2rem;
-  margin: 0;
-  text-transform: uppercase;
+/* Sistema de alertas */
+.alert-system {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 1000;
 }
 
-.modal-close {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: 900;
-}
-
-.modal-body {
-  padding: 30px;
-}
-
-.instruction {
+.alert {
   display: flex;
   align-items: center;
   gap: 20px;
-  margin-bottom: 25px;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: var(--border-radius);
-  border: 1px solid;
-  transition: all var(--transition-normal);
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 10px;
+  border: 2px solid #ff9900;
+  animation: slideIn 0.5s ease;
+  backdrop-filter: blur(10px);
 }
 
-.instruction:hover {
-  transform: translateX(10px);
-  border-color: var(--neon-pink);
-  box-shadow: var(--shadow-neon-pink);
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
 
-.step-number {
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-  font-weight: 900;
-  border-radius: 50%;
-  border: 3px solid;
-  flex-shrink: 0;
+.alert-icon {
+  font-size: 2rem;
 }
 
-.step-content h3 {
-  font-size: 1.3rem;
+.alert-content {
+  flex: 1;
+}
+
+.alert-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ff9900;
   margin-bottom: 5px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
 }
 
-.step-content p {
-  color: var(--text-muted);
-  margin: 0;
+.alert-message {
+  color: white;
+  font-size: 0.9rem;
 }
 
-.modal-footer {
-  padding: 30px;
-  border-top: 2px solid var(--neon-blue);
-  text-align: center;
+.alert-close {
+  background: none;
+  border: none;
+  color: #ff6666;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px;
+}
+
+/* Elementos flotantes */
+.floating-elements {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.floating-element {
+  position: absolute;
+  font-size: 2rem;
+  animation: float-element 6s infinite ease-in-out;
+}
+
+@keyframes float-element {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-30px) rotate(10deg); }
+}
+
+/* Haz de escaneo */
+.scanner-beam {
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    #ffff00, 
+    transparent);
+  top: 0;
+  animation: scanner 6s linear infinite;
+  box-shadow: 0 0 30px #ffff00;
+}
+
+@keyframes scanner {
+  0% { top: 0; }
+  100% { top: 100%; }
 }
 
 /* Transiciones */
-.neon-slide-enter-active,
-.neon-slide-leave-active {
+.panel-transition-enter-active,
+.panel-transition-leave-active {
   transition: all 0.5s ease;
 }
 
-.neon-slide-enter-from {
+.panel-transition-enter-from {
   opacity: 0;
-  transform: translateY(30px) scale(0.9);
+  transform: translateY(30px);
 }
 
-.neon-slide-leave-to {
+.panel-transition-leave-to {
   opacity: 0;
-  transform: translateY(-30px) scale(0.9);
-}
-
-.neon-modal-enter-active,
-.neon-modal-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.neon-modal-enter-from,
-.neon-modal-leave-to {
-  opacity: 0;
-}
-
-.neon-modal-enter-active .neon-modal-content,
-.neon-modal-leave-active .neon-modal-content {
-  transition: transform 0.3s ease;
-}
-
-.neon-modal-enter-from .neon-modal-content,
-.neon-modal-leave-to .neon-modal-content {
-  transform: scale(0.9);
+  transform: translateY(-30px);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .home-content {
-    padding: 20px 16px;
+    padding: 20px;
   }
   
-  .cta-section {
+  .holographic-header {
     padding: 30px 20px;
   }
   
-  .neon-stats {
-    flex-direction: column;
-    align-items: center;
+  .main-title {
+    font-size: 2.5rem;
   }
   
-  .stat {
-    width: 100%;
-    max-width: 300px;
-  }
-  
-  .neon-actions,
-  .neon-quick-nav {
-    flex-direction: column;
-  }
-  
-  .neon-actions .btn-neon,
-  .neon-quick-nav .btn-neon {
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .logo-text {
-    font-size: 2.2rem;
-  }
-  
-  .logo-subtitle {
-    font-size: 1rem;
+  .subtitle {
+    font-size: 1.2rem;
     letter-spacing: 2px;
   }
   
-  .welcome-title, .login-title {
-    font-size: 1.5rem;
-  }
-  
-  .modal-header {
-    padding: 20px;
+  .panel-header {
     flex-direction: column;
     gap: 15px;
     text-align: center;
   }
   
-  .instruction {
+  .panel-body {
+    padding: 30px 20px;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .nav-panel {
+    grid-template-columns: 1fr;
+  }
+  
+  .control-buttons {
     flex-direction: column;
-    text-align: center;
+  }
+  
+  .control-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .alert-system {
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
   }
 }
 </style>
