@@ -21,10 +21,10 @@
         <div class="gallows-beam"></div>
         <div class="gallows-rope"></div>
         
-        <!-- MUÑECO - MUJER -->
-        <!-- CABEZA -->
+        <!-- MUÑECO - MUJER ELEGANTE Y SIMPLE -->
+        <!-- CABEZA CON PELO LARGO -->
         <div class="woman-head" v-show="intentos >= 1">
-          <div class="hair"></div>
+          <div class="hair-long"></div>
           <div class="face">
             <div class="eye left-eye"></div>
             <div class="eye right-eye"></div>
@@ -32,7 +32,7 @@
           </div>
         </div>
         
-        <!-- CUERPO -->
+        <!-- CUERPO CON CAMISETA -->
         <div class="woman-body" v-show="intentos >= 2"></div>
         
         <!-- BRAZO IZQUIERDO -->
@@ -41,11 +41,23 @@
         <!-- BRAZO DERECHO -->
         <div class="woman-arm right-arm" v-show="intentos >= 4"></div>
         
-        <!-- PIERNA IZQUIERDA -->
-        <div class="woman-leg left-leg" v-show="intentos >= 5"></div>
+        <!-- MANO IZQUIERDA -->
+        <div class="woman-hand left-hand" v-show="intentos >= 5 && nivel === 'facil'"></div>
         
-        <!-- PIERNA DERECHA -->
-        <div class="woman-leg right-leg" v-show="intentos >= 6"></div>
+        <!-- MANO DERECHA -->
+        <div class="woman-hand right-hand" v-show="intentos >= 6 && nivel === 'facil'"></div>
+        
+        <!-- PIERNA IZQUIERDA CON PANTALÓN -->
+        <div class="woman-leg left-leg" v-show="intentos >= getIntentoPiernaIzquierda()"></div>
+        
+        <!-- PIERNA DERECHA CON PANTALÓN -->
+        <div class="woman-leg right-leg" v-show="intentos >= getIntentoPiernaDerecha()"></div>
+        
+        <!-- PIE IZQUIERDO (ZAPATO) -->
+        <div class="woman-shoe left-shoe" v-show="intentos >= 9 && nivel === 'facil'"></div>
+        
+        <!-- PIE DERECHO (ZAPATO) -->
+        <div class="woman-shoe right-shoe" v-show="intentos >= 10 && nivel === 'facil'"></div>
       </div>
 
       <!-- CONTADOR DE INTENTOS VISUAL -->
@@ -72,8 +84,8 @@
       </span>
     </div>
 
-    <!-- PISTA -->
-    <div class="hint-box" v-if="nivel!=='dificil'">
+    <!-- PISTA - YA CORREGIDO -->
+    <div class="hint-box" v-if="nivel !== 'dificil'">
       💡 Pista: <strong>{{ pista }}</strong>
     </div>
 
@@ -146,7 +158,7 @@ const categoria = route.query.category || "frutas";
 const nivel = route.query.level || "facil";
 const jugador = ref(localStorage.getItem("ahorcado_jugador")?.trim() || "Jugadora");
 
-// Palabras por categoría (mismo código)
+// PALABRAS POR CATEGORÍA - CORREGIDO: Cambié "naciones" por "paises"
 const palabrasPorCategoria = {
   frutas: [
     { palabra: "MANZANA", pista: "Roja o verde, se come cruda" },
@@ -168,6 +180,28 @@ const palabrasPorCategoria = {
     { palabra: "JURASSIC", pista: "Dinosaurios" },
     { palabra: "GLADIADOR", pista: "Coliseo romano" },
     { palabra: "AVENGERS", pista: "Superhéroes" }
+  ],
+  // CAMBIÉ "naciones" POR "paises" PARA QUE COINCIDA CON CATEGORÍAS
+  paises: [
+    { palabra: "ARGENTINA", pista: "País del tango y el mate" },
+    { palabra: "CANADA", pista: "País con hoja de maple en su bandera" },
+    { palabra: "JAPON", pista: "País del sol naciente" },
+    { palabra: "BRASIL", pista: "País del carnaval y el fútbol" },
+    { palabra: "ESPAÑA", pista: "País de la paella y el flamenco" }
+  ],
+  deportes: [
+    { palabra: "FUTBOL", pista: "Deporte con balón y porterías" },
+    { palabra: "NATACION", pista: "Deporte en el agua" },
+    { palabra: "CICLISMO", pista: "Deporte con bicicleta" },
+    { palabra: "TENIS", pista: "Deporte con raqueta y red" },
+    { palabra: "BASQUETBOL", pista: "Deporte con canasta y balón naranja" }
+  ],
+  ciencia: [
+    { palabra: "GRAVEDAD", pista: "Fuerza que atrae los objetos" },
+    { palabra: "CELULA", pista: "Unidad básica de la vida" },
+    { palabra: "ENERGIA", pista: "Capacidad para realizar trabajo" },
+    { palabra: "ATOMO", pista: "Partícula más pequeña de un elemento" },
+    { palabra: "ECLIPSE", pista: "Ocultamiento de un astro" }
   ]
 };
 
@@ -183,22 +217,51 @@ const letras = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("");
 const tiempo = ref(0);
 let intervaloTiempo = null;
 
-// NOMBRE CATEGORÍA
+// NOMBRE CATEGORÍA - CORREGIDO: Cambié "naciones" por "paises"
 const categoriaNombre = computed(() => {
-  const nombres = { frutas:"Frutas", animales:"Animales", peliculas:"Películas" };
+  const nombres = { 
+    frutas: "Frutas Explosivas", 
+    animales: "Fauna Neón", 
+    peliculas: "Cine de Luz",
+    paises: "Naciones Luminosas", // CAMBIÉ DE "naciones" A "paises"
+    deportes: "Deportes Extremos",
+    ciencia: "Ciencia Futurista"
+  };
   return nombres[categoria] || "Categoría";
 });
 
-// INTENTOS POR NIVEL (6 partes del cuerpo)
+// INTENTOS POR NIVEL - CORREGIDO SEGÚN TU ESPECIFICACIÓN
 const maxIntentos = computed(() => {
+  if (nivel === "facil") return 10;    // Fácil: 10 intentos
+  if (nivel === "medio") return 7;     // Medio: 7 intentos
+  return 4;                           // Difícil: 4 intentos
+});
+
+// FUNCIONES PARA LAS PIERNAS (varían por nivel)
+function getIntentoPiernaIzquierda() {
+  if (nivel === "facil") return 7;
+  if (nivel === "medio") return 5;
+  return 6; // Para difícil, no debería aparecer porque solo hay 4 intentos
+}
+
+function getIntentoPiernaDerecha() {
   if (nivel === "facil") return 8;
   if (nivel === "medio") return 6;
-  return 4;
-});
+  return 7; // Para difícil, no debería aparecer porque solo hay 4 intentos
+}
 
 // INICIAR JUEGO
 function initGameState(){
   const arr = palabrasPorCategoria[categoria];
+  
+  // Verificar si la categoría existe
+  if (!arr) {
+    console.error(`Categoría "${categoria}" no encontrada`);
+    // Redirigir a categorías si no existe
+    router.push('/categories');
+    return;
+  }
+  
   seleccion = arr[Math.floor(Math.random()*arr.length)];
   palabra = seleccion.palabra;
   pista = seleccion.pista;
@@ -236,6 +299,36 @@ function usarLetra(letra){
   }
 }
 
+// FUNCIÓN MEJORADA: GUARDAR RESULTADO CON FECHA ACTUAL
+function guardarResultadoEnRanking(tiempo, categoria, nivel, exito) {
+  const jugador = localStorage.getItem('ahorcado_jugador') || 'Jugador';
+  
+  // *** FECHA/HORA ACTUAL DEL SISTEMA EN EL MOMENTO EXACTO DE LA VICTORIA ***
+  const ahora = new Date();
+  
+  const nuevoRecord = {
+    id: `record-real-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    jugador: jugador,
+    categoria: categoria,
+    nivel: nivel,
+    tiempo: tiempo,
+    // Formato de fecha: YYYY-MM-DD (ej: 2025-12-11)
+    fecha: ahora.toISOString().split('T')[0],
+    // Timestamp completo con hora
+    timestamp: ahora.toISOString(),
+    exito: exito
+  };
+  
+  const ranking = JSON.parse(localStorage.getItem('ahorcado_ranking') || '[]');
+  ranking.push(nuevoRecord);
+  // Ordenar por tiempo (menor tiempo = mejor)
+  ranking.sort((a, b) => a.tiempo - b.tiempo);
+  // Mantener solo los 10 mejores
+  localStorage.setItem('ahorcado_ranking', JSON.stringify(ranking.slice(0, 10)));
+  
+  return nuevoRecord;
+}
+
 function finalizarJuego(perdio){
   clearInterval(intervaloTiempo);
   perdiste.value = perdio;
@@ -243,18 +336,13 @@ function finalizarJuego(perdio){
   mensajeFinal.value = perdio ? "❌ ¡Perdiste!" : "🎉 ¡Ganaste!";
   
   if(!perdio && jugador.value) {
-    const puntuacion = {
-      jugador: jugador.value,
-      tiempo: tiempo.value,
-      categoria: categoriaNombre.value,
-      nivel: nivel,
-      fecha: new Date().toISOString().split('T')[0]
-    };
-    
-    const ranking = JSON.parse(localStorage.getItem('ahorcado_ranking') || '[]');
-    ranking.push(puntuacion);
-    ranking.sort((a, b) => a.tiempo - b.tiempo);
-    localStorage.setItem('ahorcado_ranking', JSON.stringify(ranking.slice(0, 10)));
+    // GUARDAR CON FECHA ACTUAL
+    guardarResultadoEnRanking(
+      tiempo.value, 
+      categoriaNombre.value, 
+      nivel, 
+      true
+    );
   }
 }
 
@@ -387,42 +475,45 @@ onMounted(()=>{ initGameState(); });
   box-shadow: 0 0 10px #c77dff;
 }
 
-/* ---------- AVATAR FEMENINO ---------- */
-/* CABEZA CON PELO */
+/* ---------- MUÑECO FEMENINO ELEGANTE Y SIMPLE ---------- */
+
+/* CABEZA CON PELO LARGO */
 .woman-head {
   position: absolute;
   top: 122px;
   left: 255px;
   width: 70px;
-  height: 70px;
+  height: 90px;
   transform: translateX(-50%);
-  z-index: 2;
+  z-index: 3;
   animation: appear 0.5s ease-out;
 }
 
-.hair {
+/* PELO LARGO Y ELEGANTE */
+.hair-long {
   position: absolute;
-  top: -15px;
-  left: -10px;
-  width: 80px;
-  height: 40px;
-  background: linear-gradient(135deg, #8b4513, #d2691e);
+  top: -25px;
+  left: -15px;
+  width: 90px;
+  height: 60px;
+  background: linear-gradient(135deg, #8b4513, #d2691e, #a0522d);
   border-radius: 50% 50% 40% 40%;
-  box-shadow: 0 5px 15px rgba(139, 69, 19, 0.5);
+  box-shadow: 0 5px 20px rgba(139, 69, 19, 0.6);
   z-index: 1;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 70%, 50% 100%, 0% 70%);
 }
 
 .face {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 10px;
+  left: 5px;
   width: 60px;
   height: 60px;
   background: linear-gradient(135deg, #ffd6cc, #ffb399);
   border-radius: 50%;
   border: 3px solid #e68a6d;
   box-shadow: 0 0 25px rgba(255, 182, 193, 0.5);
-  z-index: 2;
+  z-index: 3;
 }
 
 .eye {
@@ -431,7 +522,7 @@ onMounted(()=>{ initGameState(); });
   height: 10px;
   background: #000;
   border-radius: 50%;
-  top: 20px;
+  top: 30px;
   animation: blink 3s infinite;
 }
 
@@ -461,62 +552,115 @@ onMounted(()=>{ initGameState(); });
   border-radius: 15px 15px 0 0;
 }
 
-/* CUERPO */
+/* CUERPO CON CAMISETA ELEGANTE */
 .woman-body {
   position: absolute;
-  top: 192px;
+  top: 205px;
   left: 255px;
-  width: 10px;
+  width: 14px;
   height: 80px;
-  background: linear-gradient(180deg, #ff69b4, #ff1493);
-  box-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
-  border-radius: 5px;
+  background: linear-gradient(180deg, #ff69b4, #ff1493, #db7093);
+  box-shadow: 0 0 20px rgba(255, 105, 180, 0.7);
+  border-radius: 8px;
   transform: translateX(-50%);
-  animation: appear 0.5s ease-out 0.1s both;
+  animation: appear 0.5s ease-out 0.2s both;
+  z-index: 2;
 }
 
-/* BRAZOS */
+/* BRAZOS ELEGANTES */
 .woman-arm {
   position: absolute;
-  width: 10px;
+  width: 12px;
   height: 50px;
-  background: linear-gradient(135deg, #ff69b4, #ff1493);
+  background: linear-gradient(135deg, #ff69b4, #ff1493, #db7093);
   box-shadow: 0 0 15px rgba(255, 105, 180, 0.6);
-  border-radius: 5px;
-  top: 200px;
+  border-radius: 6px;
+  top: 210px;
   animation: appear 0.5s ease-out;
+  z-index: 3;
 }
 
 .left-arm {
-  left: 225px;
-  transform: rotate(45deg);
+  left: 220px;
+  transform: rotate(40deg);
 }
 
 .right-arm {
-  left: 285px;
-  transform: rotate(-45deg);
+  left: 290px;
+  transform: rotate(-40deg);
 }
 
-/* PIERNAS */
+/* MANOS DELICADAS */
+.woman-hand {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, #ffd6cc, #ffb399);
+  border-radius: 50%;
+  border: 2px solid #e68a6d;
+  box-shadow: 0 0 10px rgba(255, 182, 193, 0.5);
+  animation: appear 0.5s ease-out;
+  z-index: 4;
+}
+
+.left-hand {
+  left: 208px;
+  top: 258px;
+  transform: rotate(40deg);
+}
+
+.right-hand {
+  left: 302px;
+  top: 258px;
+  transform: rotate(-40deg);
+}
+
+/* PIERNAS CON PANTALÓN ELEGANTE */
 .woman-leg {
   position: absolute;
-  width: 10px;
-  height: 60px;
-  background: linear-gradient(135deg, #ff69b4, #ff1493);
+  width: 12px;
+  height: 65px;
+  background: linear-gradient(135deg, #ff69b4, #ff1493, #c71585);
   box-shadow: 0 0 15px rgba(255, 105, 180, 0.6);
-  border-radius: 5px;
-  top: 265px;
+  border-radius: 6px;
+  top: 280px;
   animation: appear 0.5s ease-out;
+  z-index: 3;
 }
 
 .left-leg {
   left: 240px;
-  transform: rotate(30deg);
+  transform: rotate(25deg);
 }
 
 .right-leg {
   left: 270px;
-  transform: rotate(-30deg);
+  transform: rotate(-25deg);
+}
+
+/* ZAPATOS ELEGANTES */
+.woman-shoe {
+  position: absolute;
+  width: 25px;
+  height: 12px;
+  background: linear-gradient(135deg, #4a1e5a, #6a2c91);
+  border-radius: 0 0 8px 8px;
+  border: 2px solid #9d4edd;
+  box-shadow: 0 0 10px rgba(157, 78, 221, 0.6);
+  animation: appear 0.5s ease-out;
+  z-index: 4;
+}
+
+.left-shoe {
+  left: 232px;
+  top: 340px;
+  transform: rotate(25deg);
+}
+
+.right-shoe {
+  left: 278px;
+  top: 340px;
+  transform: rotate(-25deg);
 }
 
 /* ANIMACIONES */
@@ -861,6 +1005,7 @@ onMounted(()=>{ initGameState(); });
   }
 }
 </style>
+
 
 
 
