@@ -516,318 +516,340 @@
 <script>
 // Función exportable para guardar resultados (para usar en otros componentes)
 export function guardarResultadoEnRanking(tiempo, categoria, nivel, exito) {
-  const jugador = localStorage.getItem('ahorcado_jugador') || 'Jugador'
-  const ahora = new Date() // FECHA/HORA ACTUAL DEL SISTEMA
+  const jugador = localStorage.getItem('ahorcado_jugador') || 'Jugador';
+  
+  // *** FECHA/HORA ACTUAL DEL SISTEMA EN EL MOMENTO EXACTO DE LA VICTORIA ***
+  const ahora = new Date();
   
   const nuevoRecord = {
-    id: `record-real-${Date.now()}`,
+    id: `record-real-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     jugador: jugador,
     categoria: categoria,
     nivel: nivel,
     tiempo: tiempo,
-    fecha: ahora.toISOString().split('T')[0],
-    timestamp: ahora.toISOString(),
+    fecha: ahora.toISOString().split('T')[0], // Fecha en formato YYYY-MM-DD
+    timestamp: ahora.toISOString(),           // Timestamp completo con hora
     exito: exito
-  }
+  };
   
-  const recordsGuardados = JSON.parse(localStorage.getItem('ahorcado_ranking')) || []
-  recordsGuardados.push(nuevoRecord)
-  localStorage.setItem('ahorcado_ranking', JSON.stringify(recordsGuardados))
+  const recordsGuardados = JSON.parse(localStorage.getItem('ahorcado_ranking')) || [];
+  recordsGuardados.push(nuevoRecord);
+  localStorage.setItem('ahorcado_ranking', JSON.stringify(recordsGuardados));
   
-  return nuevoRecord
+  return nuevoRecord;
 }
 </script>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue"
-import { useRouter } from "vue-router"
+import { ref, computed, onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
 
-const router = useRouter()
+const router = useRouter();
 
 // Estados
-const records = ref([])
-const filtroCategoria = ref("Todos")
-const filtroNivel = ref("Todos")
-const currentPage = ref(1)
-const itemsPerPage = 15
-const ordenActual = ref("tiempo")
-const detalleVisible = ref(false)
-const registroDetalle = ref(null)
+const records = ref([]);
+const filtroCategoria = ref("Todos");
+const filtroNivel = ref("Todos");
+const currentPage = ref(1);
+const itemsPerPage = 15;
+const ordenActual = ref("tiempo");
+const detalleVisible = ref(false);
+const registroDetalle = ref(null);
 
 // Estadísticas globales
 const totalJugadores = computed(() => {
-  const jugadoresUnicos = new Set(records.value.map(r => r.jugador))
-  return jugadoresUnicos.size
-})
+  const jugadoresUnicos = new Set(records.value.map(r => r.jugador));
+  return jugadoresUnicos.size;
+});
 
 const totalPartidas = computed(() => {
-  return records.value.length
-})
+  return records.value.length;
+});
 
 const tiempoPromedio = computed(() => {
-  if (records.value.length === 0) return "0:00"
-  const total = records.value.reduce((sum, r) => sum + r.tiempo, 0)
-  const promedio = Math.floor(total / records.value.length)
-  return formatTime(promedio)
-})
+  if (records.value.length === 0) return "0:00";
+  const total = records.value.reduce((sum, r) => sum + r.tiempo, 0);
+  const promedio = Math.floor(total / records.value.length);
+  return formatTime(promedio);
+});
 
 const tasaExito = computed(() => {
-  if (records.value.length === 0) return 0
-  const exitos = records.value.filter(r => r.exito).length
-  return Math.round((exitos / records.value.length) * 100)
-})
+  if (records.value.length === 0) return 0;
+  const exitos = records.value.filter(r => r.exito).length;
+  return Math.round((exitos / records.value.length) * 100);
+});
 
 const partidasJugadas = computed(() => {
-  return records.value.filter(r => r.jugador === currentPlayer.value).length
-})
+  return records.value.filter(r => r.jugador === currentPlayer.value).length;
+});
 
 const mejorTiempo = computed(() => {
-  const misRecords = records.value.filter(r => r.jugador === currentPlayer.value && r.exito)
-  if (misRecords.length === 0) return "N/A"
-  const mejor = Math.min(...misRecords.map(r => r.tiempo))
-  return formatTime(mejor)
-})
+  const misRecords = records.value.filter(r => r.jugador === currentPlayer.value && r.exito);
+  if (misRecords.length === 0) return "N/A";
+  const mejor = Math.min(...misRecords.map(r => r.tiempo));
+  return formatTime(mejor);
+});
 
 const categoriaFavorita = computed(() => {
-  const misRecords = records.value.filter(r => r.jugador === currentPlayer.value)
-  if (misRecords.length === 0) return "Ninguna"
+  const misRecords = records.value.filter(r => r.jugador === currentPlayer.value);
+  if (misRecords.length === 0) return "Ninguna";
   
   const categorias = misRecords.reduce((acc, r) => {
-    acc[r.categoria] = (acc[r.categoria] || 0) + 1
-    return acc
-  }, {})
+    acc[r.categoria] = (acc[r.categoria] || 0) + 1;
+    return acc;
+  }, {});
   
   return Object.keys(categorias).reduce((a, b) => 
     categorias[a] > categorias[b] ? a : b
-  )
-})
+  );
+});
 
-const tiempoPromedioCategoria = ref(85)
-const mejorTiempoGlobal = ref(45)
+const tiempoPromedioCategoria = ref(85);
+const mejorTiempoGlobal = ref(45);
 
 // Filtros
 const categoriasFiltro = ref([
   { value: "Todos", label: "Todas", icon: "🌐" },
-  { value: "Frutas", label: "Frutas", icon: "🍉" },
-  { value: "Animales", label: "Animales", icon: "🦁" },
-  { value: "Países", label: "Países", icon: "🌍" },
-  { value: "Deportes", label: "Deportes", icon: "⚽" },
-  { value: "Películas", label: "Películas", icon: "🎬" },
-  { value: "Ciencia", label: "Ciencia", icon: "🔬" }
-])
+  { value: "Frutas Explosivas", label: "Frutas", icon: "🍉" },
+  { value: "Fauna Neón", label: "Animales", icon: "🦁" },
+  { value: "Naciones Luminosas", label: "Países", icon: "🌍" },
+  { value: "Deportes Extremos", label: "Deportes", icon: "⚽" },
+  { value: "Cine de Luz", label: "Películas", icon: "🎬" },
+  { value: "Ciencia Futurista", label: "Ciencia", icon: "🔬" }
+]);
 
 const nivelesFiltro = ref([
   { value: "Todos", label: "Todos", icon: "📊" },
   { value: "facil", label: "Fácil", icon: "😊" },
   { value: "medio", label: "Medio", icon: "😎" },
   { value: "dificil", label: "Difícil", icon: "🔥" }
-])
+]);
 
 // Computed
 const currentPlayer = computed(() => {
-  return localStorage.getItem("ahorcado_jugador") || "Jugador"
-})
+  return localStorage.getItem("ahorcado_jugador") || "Jugador";
+});
 
 const recordsFiltrados = computed(() => {
-  let filtered = [...records.value]
+  let filtered = [...records.value];
   
   // Aplicar filtros
   if (filtroCategoria.value !== "Todos") {
-    filtered = filtered.filter(r => r.categoria === filtroCategoria.value)
+    filtered = filtered.filter(r => r.categoria === filtroCategoria.value);
   }
   
   if (filtroNivel.value !== "Todos") {
-    filtered = filtered.filter(r => r.nivel === filtroNivel.value)
+    filtered = filtered.filter(r => r.nivel === filtroNivel.value);
   }
   
   // Ordenar
   if (ordenActual.value === "tiempo") {
-    filtered.sort((a, b) => a.tiempo - b.tiempo)
+    filtered.sort((a, b) => a.tiempo - b.tiempo);
   } else {
-    filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }
   
-  return filtered
-})
+  return filtered;
+});
 
 const paginatedRecords = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return recordsFiltrados.value.slice(start, end)
-})
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return recordsFiltrados.value.slice(start, end);
+});
 
 const totalPages = computed(() => {
-  return Math.ceil(recordsFiltrados.value.length / itemsPerPage)
-})
+  return Math.ceil(recordsFiltrados.value.length / itemsPerPage);
+});
 
 const miPosicion = computed(() => {
-  return recordsFiltrados.value.findIndex(r => r.jugador === currentPlayer.value)
-})
+  return recordsFiltrados.value.findIndex(r => r.jugador === currentPlayer.value);
+});
 
 // ========== MÉTODOS MEJORADOS CON FECHAS REALES ==========
 
 function formatTime(seconds) {
-  if (!seconds && seconds !== 0) return "0:00"
-  const min = Math.floor(seconds / 60)
-  const sec = seconds % 60
-  return `${min}:${sec.toString().padStart(2, '0')}`
+  if (!seconds && seconds !== 0) return "0:00";
+  const min = Math.floor(seconds / 60);
+  const sec = seconds % 60;
+  return `${min}:${sec.toString().padStart(2, '0')}`;
 }
 
 function formatDate(dateString) {
   if (!dateString) {
-    return new Date().toLocaleDateString('es-ES')
+    // Si no hay fecha, mostrar fecha actual
+    const hoy = new Date();
+    return hoy.toLocaleDateString('es-ES', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    });
   }
   try {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     if (isNaN(date.getTime())) {
-      return new Date().toLocaleDateString('es-ES')
+      // Si la fecha es inválida, mostrar fecha actual
+      const hoy = new Date();
+      return hoy.toLocaleDateString('es-ES', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric' 
+      });
     }
     return date.toLocaleDateString('es-ES', { 
       day: '2-digit', 
       month: '2-digit', 
       year: 'numeric' 
-    })
+    });
   } catch {
-    return new Date().toLocaleDateString('es-ES')
+    const hoy = new Date();
+    return hoy.toLocaleDateString('es-ES', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    });
   }
 }
 
 function formatFullDate(dateString) {
   if (!dateString) {
-    return new Date().toLocaleDateString('es-ES', {
+    const hoy = new Date();
+    return hoy.toLocaleDateString('es-ES', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    })
+    });
   }
   try {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     if (isNaN(date.getTime())) {
-      return new Date().toLocaleDateString('es-ES', {
+      const hoy = new Date();
+      return hoy.toLocaleDateString('es-ES', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
         day: 'numeric'
-      })
+      });
     }
     return date.toLocaleDateString('es-ES', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    })
+    });
   } catch {
-    return new Date().toLocaleDateString('es-ES', {
+    const hoy = new Date();
+    return hoy.toLocaleDateString('es-ES', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    })
+    });
   }
 }
 
 function formatTimeOfDay(timestamp) {
   if (!timestamp) {
-    const ahora = new Date()
+    const ahora = new Date();
     return ahora.toLocaleTimeString('es-ES', { 
       hour: '2-digit', 
       minute: '2-digit',
       hour12: false 
-    })
+    });
   }
   
   try {
-    const date = new Date(timestamp)
+    const date = new Date(timestamp);
     if (isNaN(date.getTime())) {
-      const ahora = new Date()
+      const ahora = new Date();
       return ahora.toLocaleTimeString('es-ES', { 
         hour: '2-digit', 
         minute: '2-digit',
         hour12: false 
-      })
+      });
     }
     return date.toLocaleTimeString('es-ES', { 
       hour: '2-digit', 
       minute: '2-digit',
       hour12: false 
-    })
+    });
   } catch {
-    const ahora = new Date()
+    const ahora = new Date();
     return ahora.toLocaleTimeString('es-ES', { 
       hour: '2-digit', 
       minute: '2-digit',
       hour12: false 
-    })
+    });
   }
 }
 
 function formatHour(timestamp) {
   if (!timestamp) {
-    const ahora = new Date()
+    const ahora = new Date();
     return ahora.toLocaleTimeString('es-ES', { 
       hour: '2-digit', 
       minute: '2-digit',
       second: '2-digit',
       hour12: false 
-    })
+    });
   }
   try {
-    const date = new Date(timestamp)
+    const date = new Date(timestamp);
     if (isNaN(date.getTime())) {
-      const ahora = new Date()
+      const ahora = new Date();
       return ahora.toLocaleTimeString('es-ES', { 
         hour: '2-digit', 
         minute: '2-digit',
         second: '2-digit',
         hour12: false 
-      })
+      });
     }
     return date.toLocaleTimeString('es-ES', { 
       hour: '2-digit', 
       minute: '2-digit',
       second: '2-digit',
       hour12: false 
-    })
+    });
   } catch {
-    const ahora = new Date()
+    const ahora = new Date();
     return ahora.toLocaleTimeString('es-ES', { 
       hour: '2-digit', 
       minute: '2-digit',
       second: '2-digit',
       hour12: false 
-    })
+    });
   }
 }
 
 // Métodos de utilidad
 function getAvatar(name) {
-  if (!name) return "👤"
-  const avatars = ["👩", "👨", "🧑", "👧", "👦", "🦸", "🧙", "🧚", "👾", "🤖", "🎮", "⭐"]
-  const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % avatars.length
-  return avatars[index]
+  if (!name) return "👤";
+  const avatars = ["👩", "👨", "🧑", "👧", "👦", "🦸", "🧙", "🧚", "👾", "🤖", "🎮", "⭐"];
+  const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % avatars.length;
+  return avatars[index];
 }
 
 function getAvatarClass(name) {
-  if (!name) return "avatar-default"
+  if (!name) return "avatar-default";
   const classes = [
     "avatar-pink", "avatar-blue", "avatar-green", "avatar-orange",
     "avatar-purple", "avatar-yellow", "avatar-red", "avatar-cyan"
-  ]
-  const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % classes.length
-  return classes[index]
+  ];
+  const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % classes.length;
+  return classes[index];
 }
 
 function getCategoryIcon(category) {
   const icons = {
-    "Frutas": "🍉",
-    "Animales": "🦁",
-    "Países": "🌍",
-    "Deportes": "⚽",
-    "Películas": "🎬",
-    "Ciencia": "🔬"
-  }
-  return icons[category] || "🎯"
+    "Frutas Explosivas": "🍉",
+    "Fauna Neón": "🦁",
+    "Naciones Luminosas": "🌍",
+    "Deportes Extremos": "⚽",
+    "Cine de Luz": "🎬",
+    "Ciencia Futurista": "🔬"
+  };
+  return icons[category] || "🎯";
 }
 
 function getLevelLabel(level) {
@@ -835,199 +857,183 @@ function getLevelLabel(level) {
     "facil": "FÁCIL",
     "medio": "MEDIO",
     "dificil": "DIFÍCIL"
-  }
-  return labels[level] || level?.toUpperCase() || "N/A"
+  };
+  return labels[level] || level?.toUpperCase() || "N/A";
 }
 
 function getLevelClass(level) {
-  return `level-${level}`
+  return `level-${level}`;
 }
 
 function getPositionClass(position) {
-  if (position === 1) return "position-gold"
-  if (position === 2) return "position-silver"
-  if (position === 3) return "position-bronze"
-  return "position-other"
+  if (position === 1) return "position-gold";
+  if (position === 2) return "position-silver";
+  if (position === 3) return "position-bronze";
+  return "position-other";
 }
 
 function getTimeClass(seconds) {
-  if (!seconds) return "time-normal"
-  if (seconds < 60) return "time-fast"
-  if (seconds < 120) return "time-medium"
-  return "time-slow"
+  if (!seconds) return "time-normal";
+  if (seconds < 60) return "time-fast";
+  if (seconds < 120) return "time-medium";
+  return "time-slow";
 }
 
 function calcularDiferencia(tiempo) {
-  if (!tiempo) return "N/A"
-  const diferencia = tiempo - mejorTiempoGlobal.value
-  if (diferencia === 0) return "🥇 RÉCORD"
-  if (diferencia > 0) return `+${diferencia}s`
-  return `${diferencia}s`
+  if (!tiempo) return "N/A";
+  const diferencia = tiempo - mejorTiempoGlobal.value;
+  if (diferencia === 0) return "🥇 RÉCORD";
+  if (diferencia > 0) return `+${diferencia}s`;
+  return `${diferencia}s`;
 }
 
 function getDiffClass(tiempo) {
-  if (!tiempo) return "diff-neutral"
-  if (tiempo === mejorTiempoGlobal.value) return "neon-green"
-  if (tiempo < mejorTiempoGlobal.value) return "neon-pink"
-  return "neon-red"
+  if (!tiempo) return "diff-neutral";
+  if (tiempo === mejorTiempoGlobal.value) return "neon-green";
+  if (tiempo < mejorTiempoGlobal.value) return "neon-pink";
+  return "neon-red";
 }
 
 // Métodos de acción
 function volverAlJuego() {
-  router.push('/')
+  router.push('/');
 }
 
 function actualizarRanking() {
-  cargarRecords()
-  const refreshBtn = document.querySelector('.btn-neon-blue')
+  cargarRecords();
+  const refreshBtn = document.querySelector('.btn-neon-blue');
   if (refreshBtn) {
-    refreshBtn.classList.add('neon-pulse')
+    refreshBtn.classList.add('neon-pulse');
     setTimeout(() => {
-      refreshBtn.classList.remove('neon-pulse')
-    }, 1000)
+      refreshBtn.classList.remove('neon-pulse');
+    }, 1000);
   }
 }
 
 function cargarRecords() {
-  const savedRecords = JSON.parse(localStorage.getItem("ahorcado_ranking")) || []
+  const savedRecords = JSON.parse(localStorage.getItem("ahorcado_ranking")) || [];
   
   if (savedRecords.length === 0) {
-    records.value = generarRecordsEjemplo()
+    records.value = generarRecordsEjemplo();
   } else {
     records.value = savedRecords.map((record, index) => ({
       id: record.id || `record-${index}-${Date.now()}`,
       jugador: record.jugador || "Jugador",
-      categoria: record.categoria || "Frutas",
+      categoria: record.categoria || "Frutas Explosivas",
       nivel: record.nivel || "facil",
       tiempo: typeof record.tiempo === 'number' ? record.tiempo : 0,
       fecha: record.fecha || new Date().toISOString().split('T')[0],
       timestamp: record.timestamp || new Date().toISOString(),
       exito: record.exito !== undefined ? record.exito : true,
       ranking: record.ranking || index + 1
-    }))
+    }));
   }
 }
 
-// FUNCIÓN MEJORADA: GENERAR REGISTROS CON FECHAS REALES ACTUALES
+// *** FUNCIÓN CRÍTICAMENTE CORREGIDA: GENERAR REGISTROS CON FECHAS ACTUALES REALES ***
 function generarRecordsEjemplo() {
-  const nombres = ["NEÓN", "CYBER", "RAYO", "LUZ", "SPARK", "FLASH", "PULSE", "GLOW", "BEAM", "SHINE"]
-  const categorias = ["Frutas", "Animales", "Países", "Deportes", "Películas", "Ciencia"]
-  const niveles = ["facil", "medio", "dificil"]
+  const nombres = ["NEÓN", "CYBER", "RAYO", "LUZ", "SPARK", "FLASH", "PULSO", "GLOW", "BEAM"];
+  const categorias = ["Frutas Explosivas", "Fauna Neón", "Naciones Luminosas", "Deportes Extremos", "Cine de Luz", "Ciencia Futurista"];
+  const niveles = ["facil", "medio", "dificil"];
   
-  const recordsEjemplo = []
+  const recordsEjemplo = [];
   
-  for (let i = 0; i < 30; i++) {
-    // FECHA ACTUAL DEL SISTEMA
-    const fechaActual = new Date()
+  for (let i = 0; i < 25; i++) {
+    // *** NUEVO: Crear una NUEVA fecha actual para cada registro ***
+    const fechaBase = new Date(); // Esto captura la fecha/hora en el momento exacto de la ejecución
     
-    // Variar horas y minutos para que no sean todos iguales (pero mismo día)
-    fechaActual.setHours(fechaActual.getHours() - Math.floor(Math.random() * 24))
-    fechaActual.setMinutes(fechaActual.getMinutes() - Math.floor(Math.random() * 60))
-    fechaActual.setSeconds(fechaActual.getSeconds() - Math.floor(Math.random() * 60))
+    // Crear una copia para no modificar la fecha base
+    const fechaPersonalizada = new Date(fechaBase);
+    
+    // Variar días, horas y minutos para registros diversos
+    const diasARestar = Math.floor(Math.random() * 7); // Hasta 7 días atrás
+    const horasARestar = Math.floor(Math.random() * 24);
+    const minutosARestar = Math.floor(Math.random() * 60);
+    
+    // Aplicar variaciones
+    fechaPersonalizada.setDate(fechaPersonalizada.getDate() - diasARestar);
+    fechaPersonalizada.setHours(fechaPersonalizada.getHours() - horasARestar);
+    fechaPersonalizada.setMinutes(fechaPersonalizada.getMinutes() - minutosARestar);
     
     const record = {
-      id: `record-${i}-${Date.now()}`,
+      id: `record-ejemplo-${Date.now()}-${i}`,
       jugador: nombres[Math.floor(Math.random() * nombres.length)],
       categoria: categorias[Math.floor(Math.random() * categorias.length)],
       nivel: niveles[Math.floor(Math.random() * niveles.length)],
       tiempo: Math.floor(Math.random() * 300) + 30,
-      fecha: fechaActual.toISOString().split('T')[0], // FECHA ACTUAL
-      timestamp: fechaActual.toISOString(), // TIMESTAMP ACTUAL
+      // Usamos la fechaPersonalizada que acabamos de crear
+      fecha: fechaPersonalizada.toISOString().split('T')[0],
+      timestamp: fechaPersonalizada.toISOString(),
       exito: Math.random() > 0.3,
       ranking: i + 1
-    }
+    };
     
-    recordsEjemplo.push(record)
+    recordsEjemplo.push(record);
   }
   
-  return recordsEjemplo.sort((a, b) => a.tiempo - b.tiempo)
+  return recordsEjemplo.sort((a, b) => a.tiempo - b.tiempo);
 }
 
 function ordenarPorTiempo() {
-  ordenActual.value = "tiempo"
-  currentPage.value = 1
+  ordenActual.value = "tiempo";
+  currentPage.value = 1;
 }
 
 function ordenarPorFecha() {
-  ordenActual.value = "fecha"
-  currentPage.value = 1
+  ordenActual.value = "fecha";
+  currentPage.value = 1;
 }
 
 function verDetalle(record) {
-  registroDetalle.value = record
-  detalleVisible.value = true
+  registroDetalle.value = record;
+  detalleVisible.value = true;
 }
 
 function obtenerPosicion(record) {
-  if (!record) return -1
-  return recordsFiltrados.value.findIndex(r => r.id === record.id)
+  if (!record) return -1;
+  return recordsFiltrados.value.findIndex(r => r.id === record.id);
 }
 
 function compartirLogro(record) {
-  if (!record) return
+  if (!record) return;
   
   const texto = `🏆 ¡Acabo de conseguir un tiempo de ${formatTime(record.tiempo)} en Ahorcado Neón! 🎮\n\n`
                 + `Categoría: ${record.categoria}\n`
                 + `Nivel: ${getLevelLabel(record.nivel)}\n`
                 + `Fecha: ${formatDate(record.fecha)}\n`
                 + `Hora: ${formatHour(record.timestamp)}\n\n`
-                + `#AhorcadoNeon #Videojuego`
+                + `#AhorcadoNeon #Videojuego`;
   
   if (navigator.share) {
     navigator.share({
       title: 'Mi logro en Ahorcado Neón',
       text: texto,
       url: window.location.href
-    }).catch(console.error)
+    }).catch(console.error);
   } else {
     navigator.clipboard.writeText(texto).then(() => {
-      alert('¡Logro copiado al portapapeles! Puedes compartirlo donde quieras.')
-    }).catch(console.error)
+      alert('¡Logro copiado al portapapeles! Puedes compartirlo donde quieras.');
+    }).catch(console.error);
   }
-}
-
-// FUNCIÓN INTERNA PARA GUARDAR NUEVOS RESULTADOS (para uso interno)
-function guardarResultadoInterno(tiempo, categoria, nivel, exito) {
-  const jugador = localStorage.getItem('ahorcado_jugador') || 'Jugador'
-  const ahora = new Date()
-  
-  const nuevoRecord = {
-    id: `record-real-${Date.now()}`,
-    jugador: jugador,
-    categoria: categoria,
-    nivel: nivel,
-    tiempo: tiempo,
-    fecha: ahora.toISOString().split('T')[0],
-    timestamp: ahora.toISOString(),
-    exito: exito
-  }
-  
-  const recordsGuardados = JSON.parse(localStorage.getItem('ahorcado_ranking')) || []
-  recordsGuardados.push(nuevoRecord)
-  localStorage.setItem('ahorcado_ranking', JSON.stringify(recordsGuardados))
-  
-  // Actualizar la lista en tiempo real
-  cargarRecords()
-  
-  return nuevoRecord
 }
 
 // Ciclo de vida
 onMounted(() => {
-  cargarRecords()
+  cargarRecords();
   
+  // Actualizar automáticamente cada 30 segundos
   setInterval(() => {
-    const nuevosRecords = JSON.parse(localStorage.getItem("ahorcado_ranking")) || []
+    const nuevosRecords = JSON.parse(localStorage.getItem("ahorcado_ranking")) || [];
     if (nuevosRecords.length !== records.value.length) {
-      cargarRecords()
+      cargarRecords();
     }
-  }, 30000)
-})
+  }, 30000);
+});
 
 // Watch para cambios en filtros
 watch([filtroCategoria, filtroNivel], () => {
-  currentPage.value = 1
-})
+  currentPage.value = 1;
+});
 </script>
 
 <style scoped>
@@ -2231,5 +2237,4 @@ watch([filtroCategoria, filtroNivel], () => {
   }
 }
 </style>
-
 
